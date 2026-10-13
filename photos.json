@@ -1,0 +1,8 @@
+{
+ "taxonomy": {
+  "categories": ["Paysage", "Architecture", "Objet"],
+  "typologies": ["Habitat", "Équipement public", "Espace public", "Jardin / parc", "Mobilier", "Détail constructif"],
+  "views": ["Vue d'ensemble", "Plan moyen", "Détail", "Contre-plongée", "Plongée", "Intérieur"]
+ },
+ "photos": []
+}
