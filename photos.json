@@ -1,8 +1,51 @@
 {
  "taxonomy": {
-  "categories": ["Paysage", "Architecture", "Objet"],
-  "typologies": ["Habitat", "Équipement public", "Espace public", "Jardin / parc", "Mobilier", "Détail constructif"],
-  "views": ["Vue d'ensemble", "Plan moyen", "Détail", "Contre-plongée", "Plongée", "Intérieur"]
+  "categories": [
+   "Paysage",
+   "Architecture",
+   "Objet"
+  ],
+  "typologies": [
+   "Habitat",
+   "Équipement public",
+   "Espace public",
+   "Jardin / parc",
+   "Mobilier",
+   "Détail constructif"
+  ],
+  "views": [
+   "Vue d'ensemble",
+   "Plan moyen",
+   "Détail",
+   "Contre-plongée",
+   "Plongée",
+   "Intérieur"
+  ]
  },
- "photos": []
+ "photos": [
+  {
+   "file": "1791923895416-1.jpg",
+   "title": "IMG_6965-2",
+   "category": "Paysage",
+   "typology": "Équipement public",
+   "view": "Intérieur",
+   "date": "2026-10-13T20:38:17.800Z"
+  },
+  {
+   "file": "1791923898626-2.jpg",
+   "title": "IMG_6984",
+   "category": "Paysage",
+   "typology": "Équipement public",
+   "view": "Intérieur",
+   "date": "2026-10-13T20:38:21.596Z"
+  },
+  {
+   "file": "1791923902714-3.jpg",
+   "title": "IMG_6985",
+   "category": "Paysage",
+   "typology": "Équipement public",
+   "view": "Intérieur",
+   "date": "2026-10-13T20:38:25.280Z"
+  }
+ ]
 }
