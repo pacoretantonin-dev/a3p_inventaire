@@ -40,13 +40,13 @@
   ],
   "style": {
    "ti": false,
-   "bg": "#d25b5b",
+   "bg": "#bf4a4a",
    "lc": "#ffffff",
    "ls": 1,
    "tc": "#ffffff",
    "ts": 14,
    "bgFile": "fond-1792848428851.jpg",
-   "dim": 0
+   "dim": 0.25
   }
  }
 }
