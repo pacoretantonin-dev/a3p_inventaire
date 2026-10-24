@@ -106,6 +106,9 @@ input[type=checkbox]{width:auto;margin-right:8px}
 #grid{grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:40px 26px}
 #grid:not(.free) .fr{aspect-ratio:4/3}
 #grid:not(.free) .fr img{width:100%;height:100%;object-fit:cover}
+#pickbar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:#fff;border-top:1px solid #000;padding:14px 24px;display:flex;gap:20px;align-items:center}
+#pickbar[hidden]{display:none}#pickbar button:disabled{opacity:.35;cursor:default}
+.card.picked .fr{outline:3px solid #000;outline-offset:-3px;opacity:.55}
 </style>
 </head>
 <body>
@@ -147,6 +150,7 @@ input[type=checkbox]{width:auto;margin-right:8px}
 <div class="foot"><button id="sNo">Annuler</button><button class="b" id="sOk">Enregistrer</button></div></div></div>
 <input type="file" id="bgIn" accept="image/*" hidden>
 <input type="file" id="fileIn" accept="image/*" multiple hidden>
+<div id="pickbar" hidden><span id="pickN"></span><button id="pickDel" class="b d">Supprimer</button><button id="pickNo">Annuler</button></div>
 <div id="st"></div>
 
 <script>
@@ -176,9 +180,9 @@ function render(){
   const all=sorted(),list=shown();
   $("count").textContent=all.length?`${list.length} / ${all.length}`:"";
   $("grid").innerHTML=list.map(p=>`<button class="card" data-f="${esc(p.file)}"><div class="fr"><img loading="lazy" src="${esc(src(p))}" alt="Photo ${numOf(all,p)}"></div><div class="cap"><span class="n">${numOf(all,p)}</span></div></button>`).join("");
-  renderIntro();
+  renderIntro();updPick();
   const e=$("empty");e.hidden=!!list.length;e.textContent=all.length?"Aucune photo ne correspond à ces filtres.":"L'archive est vide.";
-  $("foot").innerHTML=cfg?`<button id="fA">Ajouter des photos</button><button id="fC">Catégories</button><button id="fX">Déconnexion</button>`:`<button id="fL">Administration</button>`;
+  $("foot").innerHTML=cfg?`<button id="fA">Ajouter des photos</button><button id="fC">Catégories</button><button id="fS">Sélectionner pour supprimer</button><button id="fX">Déconnexion</button>`:`<button id="fL">Administration</button>`;
   $("foot").insertAdjacentHTML("beforeend",'<span style="margin-left:auto">version 12</span>');
 }
 function setOpen(d){openDim=d;document.querySelectorAll("#filters .dim").forEach(b=>{b.classList.toggle("open",b.dataset.tog===d);b.setAttribute("aria-expanded",b.dataset.tog===d)});document.querySelectorAll("#filters .fp").forEach(f=>f.classList.toggle("open",f.dataset.d===d))}
@@ -192,7 +196,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"&&openDim)setOpen("")
 $("foot").onclick=e=>{const i=e.target.id;
   if(i==="fL"){const m=location.hostname.match(/^(.+)\.github\.io$/);$("gO").value=cfg?.owner||(m?m[1]:"");$("gR").value=cfg?.repo||(m?(location.pathname.split("/")[1]||m[1]+".github.io"):"");$("lgOv").classList.add("open")}
   if(i==="fX"){cfg=null;try{localStorage.removeItem(LS)}catch(e){}render()}
-  if(i==="fA")$("fileIn").click();if(i==="fC"){man();$("mnOv").classList.add("open")}};
+  if(i==="fS")startPick();if(i==="fA")$("fileIn").click();if(i==="fC"){man();$("mnOv").classList.add("open")}};
 
 /* GitHub */
 async function gh(path,o={}){const m=o.method||"GET";const r=await fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${path}`+(m==="GET"?`?ref=${cfg.branch}&t=${Date.now()}`:""),{method:m,headers:{Authorization:"Bearer "+cfg.token,Accept:"application/vnd.github+json"},body:o.body?JSON.stringify(o.body):undefined});
@@ -237,13 +241,13 @@ $("mnBody").onclick=async e=>{const b=e.target.closest("button");if(!b)return;le
 
 /* visionneuse */
 function open(i){const l=shown();if(!l.length)return;cur=(i+l.length)%l.length;const p=l[cur];$("lbImg").src=src(p);const num=numOf(sorted(),p);
-  $("lbBody").innerHTML=cfg?`<div class="b" style="font-size:15px">${num}</div>${selects(p)}<div class="foot" style="justify-content:space-between"><button class="b d" id="del">Supprimer</button><button class="b" id="sv">Enregistrer</button></div>`
+  $("lbBody").innerHTML=cfg?`<div class="b" style="font-size:15px">${num}</div><div class="foot" style="justify-content:space-between;margin:10px 0 0"><button class="b d" id="del">Supprimer</button><button class="b" id="sv">Enregistrer</button></div>${selects(p)}`
    :`<div class="b" style="font-size:15px">${num}</div>${DIMS.map(([d,l])=>p[d]?`<div style="color:var(--g)">${l} : <span style="color:#000">${esc(p[d])}</span></div>`:"").join("")}`;
   if(cfg){wire($("lbBody"));
    $("sv").onclick=async()=>{const o=rd($("lbBody"));try{await commit(j=>Object.assign(j.photos.find(x=>x.file===p.file)||{},o),"Modification");say("Enregistré")}catch(e){say("Erreur : "+e.message,5000)}};
-   $("del").onclick=async()=>{if(!confirm("Supprimer cette photo définitivement ?"))return;try{const f=await gh("photos/"+encodeURIComponent(p.file));await gh("photos/"+encodeURIComponent(p.file),{method:"DELETE",body:{message:"Suppression "+p.file,sha:f.sha,branch:cfg.branch}});await commit(j=>{j.photos=j.photos.filter(x=>x.file!==p.file)},"Suppression");$("lbOv").classList.remove("open")}catch(e){say("Erreur : "+e.message,5000)}}}
+   $("del").onclick=async()=>{if(!confirm("Supprimer cette photo définitivement ?"))return;say("Suppression…",0);try{await delFile(p.file);await commit(j=>{j.photos=j.photos.filter(x=>x.file!==p.file)},"Suppression");$("lbOv").classList.remove("open");say("Supprimé")}catch(e){fail(e)}}}
   $("lbOv").classList.add("open")}
-$("grid").onclick=e=>{const c=e.target.closest(".card");if(c)open(shown().findIndex(p=>p.file===c.dataset.f))};
+$("grid").onclick=e=>{const c=e.target.closest(".card");if(!c)return;if(pickMode){const f=c.dataset.f;picked.has(f)?picked.delete(f):picked.add(f);updPick();return}open(shown().findIndex(p=>p.file===c.dataset.f))};
 $("pv").onclick=()=>open(cur-1);$("nx").onclick=()=>open(cur+1);$("lbX").onclick=()=>$("lbOv").classList.remove("open");
 document.addEventListener("keydown",e=>{if(!$("lbOv").classList.contains("open")||/INPUT|SELECT/.test(e.target.tagName))return;if(e.key==="ArrowLeft")open(cur-1);if(e.key==="ArrowRight")open(cur+1);if(e.key==="Escape")$("lbOv").classList.remove("open")});
 
@@ -251,7 +255,7 @@ document.addEventListener("keydown",e=>{if(!$("lbOv").classList.contains("open")
 const DEF={id:"default",text:"I3P est un inventaire photographique constitué au fil des voyages et des découvertes. Les images y sont collectées et classées selon leurs typologies, formes, points de vue ou lieux, pour composer une bibliothèque ouverte du paysage et de l’architecture ordinaire, loin des images lisses et idéalisées. Un regard sur le réel, ses imperfections et la richesse des territoires habités.",x:6,y:70};
 const itx=j=>{if(!j.intro)j.intro={};if(!j.intro.texts)j.intro.texts=[{...DEF}];return j.intro.texts};
 function renderIntro(){if(!$("stOv").classList.contains("open"))applyStyle(data.intro?.style||{});const b=$("itexts");b.innerHTML="";(data.intro?.texts??[DEF]).forEach(t=>{const d=document.createElement("div");d.className="it"+(cfg?" ed":"")+(t.id===selId?" sel":"");d.textContent=t.text;d.style.left=t.x+"%";d.style.top=t.y+"%";d.dataset.id=t.id;b.appendChild(d)});$("itools").hidden=!cfg}
-let drag=null,selId=null,nudgeT=null;const fail=e=>say("Erreur : "+e.message,5000);
+let drag=null,selId=null,nudgeT=null;const fail=e=>say("Erreur : "+e.message+(/^40[13]/.test(e.message)?" — jeton expiré ou sans droit d'écriture : reconnecte-toi avec un nouveau jeton.":""),9000);
 $("itexts").addEventListener("pointerdown",e=>{const d=e.target.closest(".it");if(!cfg||!d)return;e.stopPropagation();e.preventDefault();selId=d.dataset.id;document.querySelectorAll(".it.sel").forEach(x=>x.classList.remove("sel"));d.classList.add("sel");drag={d,ox:e.clientX-d.offsetLeft,oy:e.clientY-d.offsetTop};d.setPointerCapture(e.pointerId)});
 $("itexts").addEventListener("pointermove",e=>{if(!drag)return;const x=Math.max(0,Math.min(95,(e.clientX-drag.ox)/innerWidth*100)),y=Math.max(0,Math.min(95,(e.clientY-drag.oy)/innerHeight*100));drag.d.style.left=x+"%";drag.d.style.top=y+"%";drag.x=x;drag.y=y});
 $("itexts").addEventListener("pointerup",async()=>{if(!drag)return;const{d,x,y}=drag;drag=null;if(x===undefined)return;try{await commit(j=>{const t=itx(j).find(a=>a.id===d.dataset.id);if(t){t.x=+x.toFixed(2);t.y=+y.toFixed(2)}},"Déplacement du texte")}catch(e){fail(e)}});
@@ -282,6 +286,17 @@ $("sOk").onclick=async()=>{$("stOv").classList.remove("open");
   try{if(bgBlob){say("Envoi de la photo…",0);const name="fond-"+Date.now()+".jpg";await gh("bg/"+name,{method:"PUT",body:{message:"Photo de fond",content:await bb(bgBlob),branch:cfg.branch}});draft.bgFile=name;bgBlob=null}
     const d={...draft};await commit(j=>{itx(j);j.intro.style=d},"Style de la page d'accueil");say("Enregistré. En ligne pour les visiteurs dans environ une minute.",6000)}
   catch(err){fail(err);applyStyle(data.intro?.style||{})}};
+
+/* suppression */
+let pickMode=false;const picked=new Set();
+async function delFile(f){let sha;try{sha=(await gh("photos/"+encodeURIComponent(f))).sha}catch(e){if(/^404/.test(e.message))return;throw e}
+  await gh("photos/"+encodeURIComponent(f),{method:"DELETE",body:{message:"Suppression "+f,sha,branch:cfg.branch}})}
+function updPick(){document.querySelectorAll(".card").forEach(c=>c.classList.toggle("picked",picked.has(c.dataset.f)));$("pickN").textContent=picked.size+" sélectionnée"+(picked.size>1?"s":"");$("pickDel").disabled=!picked.size}
+function startPick(){pickMode=true;picked.clear();$("pickbar").hidden=false;updPick()}
+function endPick(){pickMode=false;picked.clear();$("pickbar").hidden=true;updPick()}
+$("pickNo").onclick=endPick;
+$("pickDel").onclick=async()=>{const files=[...picked];if(!files.length||!confirm("Supprimer définitivement "+files.length+" photo(s) ?"))return;say("Suppression…",0);
+  try{for(const f of files)await delFile(f);await commit(j=>{j.photos=j.photos.filter(x=>!files.includes(x.file))},"Suppression de "+files.length+" photo(s)");endPick();say("Supprimé")}catch(e){fail(e)}};
 
 fetch("photos.json?t="+Date.now()).then(r=>r.json()).then(j=>{data=j}).catch(()=>{}).finally(render);
 render();
