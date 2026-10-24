@@ -51,13 +51,13 @@
   ],
   "style": {
    "ti": false,
-   "bg": "#000000",
+   "bg": "#d25b5b",
    "lc": "#ffffff",
    "ls": 1,
    "tc": "#ffffff",
-   "ts": 10,
+   "ts": 14,
    "bgFile": "",
-   "dim": 0.15
+   "dim": 0.5
   }
  }
 }
