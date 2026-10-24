@@ -109,6 +109,10 @@ input[type=checkbox]{width:auto;margin-right:8px}
 #pickbar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:#fff;border-top:1px solid #000;padding:14px 24px;display:flex;gap:20px;align-items:center}
 #pickbar[hidden]{display:none}#pickbar button:disabled{opacity:.35;cursor:default}
 .card.picked .fr{outline:3px solid #000;outline-offset:-3px;opacity:.55}
+textarea{width:100%;padding:8px;border:1px solid #000;border-radius:0;background:transparent;font:inherit;font-size:14px;resize:vertical}
+.note{white-space:pre-wrap;margin-top:14px;font-size:15px;line-height:1.5}
+.opt.add{color:#000;text-decoration:underline}.opt.add::before{display:none}
+#pickbar{flex-wrap:wrap}
 </style>
 </head>
 <body>
@@ -150,12 +154,12 @@ input[type=checkbox]{width:auto;margin-right:8px}
 <div class="foot"><button id="sNo">Annuler</button><button class="b" id="sOk">Enregistrer</button></div></div></div>
 <input type="file" id="bgIn" accept="image/*" hidden>
 <input type="file" id="fileIn" accept="image/*" multiple hidden>
-<div id="pickbar" hidden><span id="pickN"></span><button id="pickDel" class="b d">Supprimer</button><button id="pickNo">Annuler</button></div>
+<div id="pickbar" hidden><span id="pickN"></span><select id="pickCat" style="width:auto"></select><button id="pickSet" class="b">Classer</button><button id="pickDel" class="b d">Supprimer</button><button id="pickNo">Annuler</button></div>
 <div id="st"></div>
 
 <script>
-const DIMS=[["category","Catégorie","categories"],["typology","Typologie","typologies"],["view","Prise de vue","views"]];
-let data={taxonomy:{categories:[],typologies:[],views:[]},photos:[]},sel={category:[],typology:[],view:[]},openDim="",cur=-1,pending=[],cfg=null,local={};
+const DIMS=[["category","Catégorie","categories"]];
+let data={taxonomy:{categories:[],typologies:[],views:[]},photos:[]},sel={category:[]},openDim="",cur=-1,pending=[],cfg=null,local={};
 const $=id=>document.getElementById(id),LS="i3p-gh";
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const say=(t,ms=3000)=>{const s=$("st");s.textContent=t;s.style.display="block";if(ms)setTimeout(()=>s.style.display="none",ms)};
@@ -175,18 +179,20 @@ $("vf").onclick=()=>{$("grid").className="free";document.documentElement.classLi
 
 function render(){
   $("filters").innerHTML=`<div class="bar">${DIMS.map(([d,l])=>`<button class="dim ${openDim===d?"open":""}" data-tog="${d}" aria-expanded="${openDim===d}">${l}${sel[d].length?` (${sel[d].length})`:""}<span class="ar">▾</span></button>`).join("")}</div>`
-   +DIMS.map(([d,l,k])=>`<div class="fp ${openDim===d?"open":""}" data-d="${d}"><div class="in"><div class="list">${vals(d,k).map(v=>`<button class="opt ${sel[d].includes(v)?"on":""}" data-d="${d}" data-v="${esc(v)}">${esc(v)}</button>`).join("")||'<span style="color:var(--g)">Aucune valeur</span>'}</div></div></div>`).join("")
+   +DIMS.map(([d,l,k])=>`<div class="fp ${openDim===d?"open":""}" data-d="${d}"><div class="in"><div class="list">${vals(d,k).map(v=>`<button class="opt ${sel[d].includes(v)?"on":""}" data-d="${d}" data-v="${esc(v)}">${esc(v)}</button>`).join("")||'<span style="color:var(--g)">Aucune valeur</span>'}${cfg?'<button class="opt add" data-newcat="1">+ Nouvelle catégorie</button>':""}</div></div></div>`).join("")
    +(()=>{const ch=DIMS.flatMap(([d])=>sel[d].map(v=>[d,v]));return ch.length?`<div class="chosen">${ch.map(([d,v])=>`<span class="chip">${esc(v)}<button data-rm="${d}" data-val="${esc(v)}" aria-label="Retirer ${esc(v)}">×</button></span>`).join("")}<button class="clr" data-clear="1">Tout effacer</button></div>`:""})();
   const all=sorted(),list=shown();
   $("count").textContent=all.length?`${list.length} / ${all.length}`:"";
-  $("grid").innerHTML=list.map(p=>`<button class="card" data-f="${esc(p.file)}"><div class="fr"><img loading="lazy" src="${esc(src(p))}" alt="Photo ${numOf(all,p)}"></div><div class="cap"><span class="n">${numOf(all,p)}</span></div></button>`).join("");
+  $("grid").innerHTML=list.map(p=>`<button class="card" data-f="${esc(p.file)}"><div class="fr"><img loading="lazy" src="${esc(src(p))}" alt="" onerror="this.closest('.card').style.display='none'"></div></button>`).join("");
   renderIntro();updPick();
   const e=$("empty");e.hidden=!!list.length;e.textContent=all.length?"Aucune photo ne correspond à ces filtres.":"L'archive est vide.";
   $("foot").innerHTML=cfg?`<button id="fA">Ajouter des photos</button><button id="fC">Catégories</button><button id="fS">Sélectionner pour supprimer</button><button id="fX">Déconnexion</button>`:`<button id="fL">Administration</button>`;
-  $("foot").insertAdjacentHTML("beforeend",'<span style="margin-left:auto">version 12</span>');
+  $("foot").insertAdjacentHTML("beforeend",'<span style="margin-left:auto">version 13</span>');
 }
+async function newCat(){const v=(prompt("Nom de la nouvelle catégorie :")||"").trim();if(!v)return;try{await commit(j=>{const a=j.taxonomy.categories=j.taxonomy.categories||[];if(!a.includes(v))a.push(v)},"Nouvelle catégorie");say("Catégorie ajoutée")}catch(e){fail(e)}}
 function setOpen(d){openDim=d;document.querySelectorAll("#filters .dim").forEach(b=>{b.classList.toggle("open",b.dataset.tog===d);b.setAttribute("aria-expanded",b.dataset.tog===d)});document.querySelectorAll("#filters .fp").forEach(f=>f.classList.toggle("open",f.dataset.d===d))}
 $("filters").onclick=e=>{const t=e.target.closest("button");if(!t)return;
+  if(t.dataset.newcat){newCat();return}
   if(t.dataset.tog){setOpen(openDim===t.dataset.tog?"":t.dataset.tog);return}
   if(t.dataset.v!==undefined){const a=sel[t.dataset.d],i=a.indexOf(t.dataset.v);i<0?a.push(t.dataset.v):a.splice(i,1);render();return}
   if(t.dataset.rm!==undefined){const a=sel[t.dataset.rm];a.splice(a.indexOf(t.dataset.val),1);render();return}
@@ -203,17 +209,23 @@ async function gh(path,o={}){const m=o.method||"GET";const r=await fetch(`https:
   if(!r.ok){let t="";try{t=(await r.json()).message}catch(e){}throw new Error(r.status+" "+t)}return r.json()}
 const u8b=s=>{const b=new TextEncoder().encode(s);let x="";for(let i=0;i<b.length;i+=8192)x+=String.fromCharCode(...b.subarray(i,i+8192));return btoa(x)};
 const b8u=b=>new TextDecoder().decode(Uint8Array.from(atob(b.replace(/\s/g,"")),c=>c.charCodeAt(0)));
-async function commit(mut,msg){let f=null;try{f=await gh("photos.json")}catch(e){if(!/^404/.test(e.message))throw e}
+async function commit1(mut,msg){let f=null;try{f=await gh("photos.json")}catch(e){if(!/^404/.test(e.message))throw e}
   const j=f?JSON.parse(b8u(f.content)):{taxonomy:data.taxonomy,photos:[]};mut(j);
   await gh("photos.json",{method:"PUT",body:{message:msg,content:u8b(JSON.stringify(j,null,1)),branch:cfg.branch,sha:f?.sha}});data=j;render()}
+async function commit(mut,msg){for(let i=0;;i++){try{return await commit1(mut,msg)}catch(e){if(i<2&&/^(409|422)/.test(e.message)){await new Promise(r=>setTimeout(r,800));continue}throw e}}}
+async function adminSync(){if(!cfg)return;try{const f=await gh("photos.json");data=JSON.parse(b8u(f.content));render();
+  const r=await fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/git/trees/${cfg.branch}?recursive=1&t=${Date.now()}`,{headers:{Authorization:"Bearer "+cfg.token,Accept:"application/vnd.github+json"}});if(!r.ok)return;
+  const t=await r.json();if(t.truncated)return;const have=new Set(t.tree.map(x=>x.path)),gone=data.photos.filter(p=>!have.has("photos/"+p.file));
+  if(gone.length){await commit(j=>{j.photos=j.photos.filter(p=>have.has("photos/"+p.file))},"Nettoyage des photos manquantes");say(gone.length+" photo(s) manquante(s) retirée(s) de la liste",6000)}}catch(e){}}
+$("st").onclick=()=>$("st").style.display="none";
 $("lgNo").onclick=()=>$("lgOv").classList.remove("open");
 $("lgOk").onclick=async()=>{cfg={owner:$("gO").value.trim(),repo:$("gR").value.trim(),branch:$("gB").value.trim()||"main",token:$("gT").value.trim()};
-  try{await gh("photos.json");try{localStorage.setItem(LS,JSON.stringify(cfg))}catch(e){}$("lgOv").classList.remove("open");$("gT").value="";render();say("Connecté")}
+  try{await gh("photos.json");try{localStorage.setItem(LS,JSON.stringify(cfg))}catch(e){}$("lgOv").classList.remove("open");$("gT").value="";render();say("Connecté");adminSync()}
   catch(e){cfg=null;$("lgErr").textContent="Connexion impossible ("+e.message+"). Vérifie le compte, le dépôt et le jeton."}};
 
 /* formulaires */
-const selects=v=>DIMS.map(([d,l,k])=>{const o=vals(d,k);return`<label>${l}</label><select data-d="${d}" data-k="${k}"><option value="">—</option>${o.map(x=>`<option value="${esc(x)}" ${v[d]===x?"selected":""}>${esc(x)}</option>`).join("")}<option value="__n">Nouvelle valeur…</option></select>`}).join("");
-const wire=r=>r.querySelectorAll("select").forEach(s=>s.onchange=async()=>{if(s.value!=="__n")return;const v=(prompt("Nom de la nouvelle valeur :")||"").trim();if(!v){s.value="";return}
+const selects=v=>DIMS.map(([d,l,k])=>{const o=vals(d,k);return`<label>${l}</label><select data-d="${d}" data-k="${k}"><option value="">—</option>${o.map(x=>`<option value="${esc(x)}" ${v[d]===x?"selected":""}>${esc(x)}</option>`).join("")}<option value="__n">Nouvelle catégorie…</option></select>`}).join("");
+const wire=r=>r.querySelectorAll("select").forEach(s=>s.onchange=async()=>{if(s.value!=="__n")return;const v=(prompt("Nom de la nouvelle catégorie :")||"").trim();if(!v){s.value="";return}
   try{await commit(j=>{const a=j.taxonomy[s.dataset.k]=j.taxonomy[s.dataset.k]||[];if(!a.includes(v))a.push(v)},"Nouvelle valeur");const o=document.createElement("option");o.value=o.textContent=v;s.insertBefore(o,s.lastElementChild);s.value=v}catch(e){say("Erreur : "+e.message,5000);s.value=""}});
 const rd=r=>{const o={};r.querySelectorAll("select").forEach(s=>o[s.dataset.d]=s.value==="__n"?"":s.value);return o};
 
@@ -240,22 +252,22 @@ $("mnBody").onclick=async e=>{const b=e.target.closest("button");if(!b)return;le
   try{await commit(f,"Catégories");man()}catch(err){say("Erreur : "+err.message,5000)}};
 
 /* visionneuse */
-function open(i){const l=shown();if(!l.length)return;cur=(i+l.length)%l.length;const p=l[cur];$("lbImg").src=src(p);const num=numOf(sorted(),p);
-  $("lbBody").innerHTML=cfg?`<div class="b" style="font-size:15px">${num}</div><div class="foot" style="justify-content:space-between;margin:10px 0 0"><button class="b d" id="del">Supprimer</button><button class="b" id="sv">Enregistrer</button></div>${selects(p)}`
-   :`<div class="b" style="font-size:15px">${num}</div>${DIMS.map(([d,l])=>p[d]?`<div style="color:var(--g)">${l} : <span style="color:#000">${esc(p[d])}</span></div>`:"").join("")}`;
+function open(i){const l=shown();if(!l.length)return;cur=(i+l.length)%l.length;const p=l[cur];$("lbImg").src=src(p);
+  $("lbBody").innerHTML=cfg?`<div class="foot" style="justify-content:space-between;margin:0 0 6px"><button class="b d" id="del">Supprimer</button><button class="b" id="sv">Enregistrer</button></div>${selects(p)}<label>Texte</label><textarea id="eN" rows="6" placeholder="Écris ici ce que tu veux sur cette photo">${esc(p.note)}</textarea>`
+   :`${DIMS.map(([d,l])=>p[d]?`<div style="color:var(--g)">${l} : <span style="color:#000">${esc(p[d])}</span></div>`:"").join("")}${p.note?`<div class="note">${esc(p.note)}</div>`:""}`;
   if(cfg){wire($("lbBody"));
-   $("sv").onclick=async()=>{const o=rd($("lbBody"));try{await commit(j=>Object.assign(j.photos.find(x=>x.file===p.file)||{},o),"Modification");say("Enregistré")}catch(e){say("Erreur : "+e.message,5000)}};
-   $("del").onclick=async()=>{if(!confirm("Supprimer cette photo définitivement ?"))return;say("Suppression…",0);try{await delFile(p.file);await commit(j=>{j.photos=j.photos.filter(x=>x.file!==p.file)},"Suppression");$("lbOv").classList.remove("open");say("Supprimé")}catch(e){fail(e)}}}
+   $("sv").onclick=async()=>{const o={...rd($("lbBody")),note:$("eN").value};try{await commit(j=>Object.assign(j.photos.find(x=>x.file===p.file)||{},o),"Modification");say("Enregistré")}catch(e){fail(e)}};
+   $("del").onclick=async()=>{if(!confirm("Supprimer cette photo définitivement ?"))return;say("Suppression…",0);try{await commit(j=>{j.photos=j.photos.filter(x=>x.file!==p.file)},"Suppression");try{await delFile(p.file)}catch(e){}$("lbOv").classList.remove("open");say("Supprimé")}catch(e){fail(e)}}}
   $("lbOv").classList.add("open")}
 $("grid").onclick=e=>{const c=e.target.closest(".card");if(!c)return;if(pickMode){const f=c.dataset.f;picked.has(f)?picked.delete(f):picked.add(f);updPick();return}open(shown().findIndex(p=>p.file===c.dataset.f))};
 $("pv").onclick=()=>open(cur-1);$("nx").onclick=()=>open(cur+1);$("lbX").onclick=()=>$("lbOv").classList.remove("open");
-document.addEventListener("keydown",e=>{if(!$("lbOv").classList.contains("open")||/INPUT|SELECT/.test(e.target.tagName))return;if(e.key==="ArrowLeft")open(cur-1);if(e.key==="ArrowRight")open(cur+1);if(e.key==="Escape")$("lbOv").classList.remove("open")});
+document.addEventListener("keydown",e=>{if(!$("lbOv").classList.contains("open")||/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;if(e.key==="ArrowLeft")open(cur-1);if(e.key==="ArrowRight")open(cur+1);if(e.key==="Escape")$("lbOv").classList.remove("open")});
 
 /* page d'accueil : textes déplaçables */
 const DEF={id:"default",text:"I3P est un inventaire photographique constitué au fil des voyages et des découvertes. Les images y sont collectées et classées selon leurs typologies, formes, points de vue ou lieux, pour composer une bibliothèque ouverte du paysage et de l’architecture ordinaire, loin des images lisses et idéalisées. Un regard sur le réel, ses imperfections et la richesse des territoires habités.",x:6,y:70};
 const itx=j=>{if(!j.intro)j.intro={};if(!j.intro.texts)j.intro.texts=[{...DEF}];return j.intro.texts};
 function renderIntro(){if(!$("stOv").classList.contains("open"))applyStyle(data.intro?.style||{});const b=$("itexts");b.innerHTML="";(data.intro?.texts??[DEF]).forEach(t=>{const d=document.createElement("div");d.className="it"+(cfg?" ed":"")+(t.id===selId?" sel":"");d.textContent=t.text;d.style.left=t.x+"%";d.style.top=t.y+"%";d.dataset.id=t.id;b.appendChild(d)});$("itools").hidden=!cfg}
-let drag=null,selId=null,nudgeT=null;const fail=e=>say("Erreur : "+e.message+(/^40[13]/.test(e.message)?" — jeton expiré ou sans droit d'écriture : reconnecte-toi avec un nouveau jeton.":""),9000);
+let drag=null,selId=null,nudgeT=null;const fail=e=>say("Erreur : "+e.message+(/^40[13]/.test(e.message)?" — jeton expiré ou sans droit d'écriture : reconnecte-toi avec un nouveau jeton.":"")+" (touche ce message pour le fermer)",0);
 $("itexts").addEventListener("pointerdown",e=>{const d=e.target.closest(".it");if(!cfg||!d)return;e.stopPropagation();e.preventDefault();selId=d.dataset.id;document.querySelectorAll(".it.sel").forEach(x=>x.classList.remove("sel"));d.classList.add("sel");drag={d,ox:e.clientX-d.offsetLeft,oy:e.clientY-d.offsetTop};d.setPointerCapture(e.pointerId)});
 $("itexts").addEventListener("pointermove",e=>{if(!drag)return;const x=Math.max(0,Math.min(95,(e.clientX-drag.ox)/innerWidth*100)),y=Math.max(0,Math.min(95,(e.clientY-drag.oy)/innerHeight*100));drag.d.style.left=x+"%";drag.d.style.top=y+"%";drag.x=x;drag.y=y});
 $("itexts").addEventListener("pointerup",async()=>{if(!drag)return;const{d,x,y}=drag;drag=null;if(x===undefined)return;try{await commit(j=>{const t=itx(j).find(a=>a.id===d.dataset.id);if(t){t.x=+x.toFixed(2);t.y=+y.toFixed(2)}},"Déplacement du texte")}catch(e){fail(e)}});
@@ -289,16 +301,18 @@ $("sOk").onclick=async()=>{$("stOv").classList.remove("open");
 
 /* suppression */
 let pickMode=false;const picked=new Set();
-async function delFile(f){let sha;try{sha=(await gh("photos/"+encodeURIComponent(f))).sha}catch(e){if(/^404/.test(e.message))return;throw e}
-  await gh("photos/"+encodeURIComponent(f),{method:"DELETE",body:{message:"Suppression "+f,sha,branch:cfg.branch}})}
-function updPick(){document.querySelectorAll(".card").forEach(c=>c.classList.toggle("picked",picked.has(c.dataset.f)));$("pickN").textContent=picked.size+" sélectionnée"+(picked.size>1?"s":"");$("pickDel").disabled=!picked.size}
-function startPick(){pickMode=true;picked.clear();$("pickbar").hidden=false;updPick()}
+async function delFile(f){for(let i=0;i<3;i++){let sha;try{sha=(await gh("photos/"+encodeURIComponent(f))).sha}catch(e){if(/^404/.test(e.message))return;throw e}
+  try{await gh("photos/"+encodeURIComponent(f),{method:"DELETE",body:{message:"Suppression "+f,sha,branch:cfg.branch}});return}catch(e){if(i<2&&/^(409|422)/.test(e.message)){await new Promise(r=>setTimeout(r,800));continue}throw e}}}
+function updPick(){document.querySelectorAll(".card").forEach(c=>c.classList.toggle("picked",picked.has(c.dataset.f)));$("pickN").textContent=picked.size+" sélectionnée"+(picked.size>1?"s":"");$("pickDel").disabled=!picked.size;$("pickSet").disabled=!picked.size}
+function startPick(){pickMode=true;picked.clear();$("pickCat").innerHTML='<option value="">Classer dans…</option>'+vals("category","categories").map(v=>`<option>${esc(v)}</option>`).join("");$("pickbar").hidden=false;updPick()}
 function endPick(){pickMode=false;picked.clear();$("pickbar").hidden=true;updPick()}
 $("pickNo").onclick=endPick;
+$("pickSet").onclick=async()=>{const files=[...picked],c=$("pickCat").value;if(!files.length||!c){say("Choisis une catégorie dans la liste",3000);return}say("Classement…",0);
+  try{await commit(j=>{j.photos.forEach(p=>{if(files.includes(p.file))p.category=c})},"Classement");endPick();say("Classé dans « "+c+" »")}catch(e){fail(e)}};
 $("pickDel").onclick=async()=>{const files=[...picked];if(!files.length||!confirm("Supprimer définitivement "+files.length+" photo(s) ?"))return;say("Suppression…",0);
-  try{for(const f of files)await delFile(f);await commit(j=>{j.photos=j.photos.filter(x=>!files.includes(x.file))},"Suppression de "+files.length+" photo(s)");endPick();say("Supprimé")}catch(e){fail(e)}};
+  try{await commit(j=>{j.photos=j.photos.filter(x=>!files.includes(x.file))},"Suppression de "+files.length+" photo(s)");for(const f of files){try{await delFile(f)}catch(e){}}endPick();say("Supprimé")}catch(e){fail(e)}};
 
-fetch("photos.json?t="+Date.now()).then(r=>r.json()).then(j=>{data=j}).catch(()=>{}).finally(render);
+fetch("photos.json?t="+Date.now()).then(r=>r.json()).then(j=>{data=j}).catch(()=>{}).finally(()=>{render();adminSync()});
 render();
 </script>
 </body>
