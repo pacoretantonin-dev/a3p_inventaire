@@ -689,13 +689,13 @@
   ],
   "style": {
    "ti": false,
-   "bg": "#d9bfbf",
+   "bg": "#000000",
    "lc": "#ffffff",
    "ls": 1,
    "tc": "#ffffff",
    "ts": 14,
    "bgFile": "fond-1792876231123.jpg",
-   "dim": 0.25
+   "dim": 0
   }
  }
 }
