@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>I3P</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat&family=Cormorant+Garamond:wght@400;500&family=IBM+Plex+Mono&display=swap">
 <style>
 :root{color-scheme:light;--g:#8c8c8c;--l:#e4e4e4;--sans:"Helvetica Neue",Helvetica,Arial,sans-serif;--mono:"IBM Plex Mono","Courier New",monospace}
 *{box-sizing:border-box}
@@ -118,13 +119,22 @@ textarea{width:100%;padding:8px;border:1px solid #000;border-radius:0;background
 .sub{font-size:12px;color:var(--g);text-decoration:underline;margin-left:14px}
 .mrow{display:flex;gap:14px;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--l)}
 .mrow span{flex:1}.mrow button{font-size:12px;color:var(--g);text-decoration:underline}
+#ttools{position:absolute;z-index:4;bottom:62px;left:50%;transform:translateX(-50%);display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center;background:rgba(0,0,0,.82);color:#fff;padding:8px 12px;font-size:12px;max-width:94vw}
+#ttools[hidden]{display:none}
+#ttools select{width:auto;background:#000;color:#fff;border:1px solid #666;padding:3px;font-size:12px}
+#ttools button{color:#fff;border:1px solid #666;padding:3px 8px;font-size:12px}
+#ttools button.on{background:#fff;color:#000}
+#ttools label{display:flex;gap:6px;align-items:center;margin:0;color:#fff;font-size:12px}
+#ttools input[type=range]{width:110px;border:0;padding:0}
+.rz{position:absolute;right:-10px;bottom:-10px;width:12px;height:12px;background:#fff;border:1px solid #000;cursor:ew-resize;touch-action:none}
 </style>
 </head>
 <body>
 <section id="intro" aria-label="Page d'accueil">
 <h1 id="bigLogo"><button id="enter" aria-label="Entrer dans le site">I3P</button></h1>
 <div id="itexts"></div>
-<div id="itools" hidden><button id="addT">+ texte</button><button id="sBtn">style</button><span>glisser pour déplacer · flèches du clavier pour affiner · double-clic pour modifier ou supprimer · clic sur I3P pour entrer</span></div>
+<div id="ttools" hidden><select id="tF" aria-label="Police"></select><span><button data-al="left">Gauche</button> <button data-al="center">Centré</button> <button data-al="right">Droite</button> <button data-al="justify">Justifié</button></span><label>Largeur <input type="range" id="tW" min="8" max="95"></label><button id="tDel">Supprimer</button></div>
+<div id="itools" hidden><button id="addT">+ texte</button><button id="sBtn">style</button><span>clique sur un texte pour régler police, alignement et largeur · glisser pour déplacer · flèches pour affiner · double-clic pour modifier ou supprimer · clic sur I3P pour entrer</span></div>
 </section>
 <div id="site">
 <header><button id="logo">I3P</button><div class="meta"><span id="count"></span><button id="vu" class="on">Grille</button><button id="vf">Libre</button></div></header>
@@ -182,7 +192,7 @@ const addPath=(j,path)=>{const a=j.taxonomy.categories=j.taxonomy.categories||[]
 
 /* intro */
 const enter=()=>{$("intro").classList.add("out");$("site").classList.add("in");scrollTo(0,0)};
-$("intro").onclick=e=>{if(cfg&&!e.target.closest("#enter,#bigLogo"))return;enter()};
+$("intro").onclick=e=>{if(cfg&&!e.target.closest("#enter,#bigLogo")){if(selId&&!e.target.closest(".it,#itools,#ttools")){selId=null;renderIntro()}return}enter()};
 $("logo").onclick=()=>{$("intro").classList.remove("out");$("site").classList.remove("in")};
 $("vu").onclick=()=>{$("grid").className="";document.documentElement.classList.remove("free");$("vu").className="on";$("vf").className=""};
 $("vf").onclick=()=>{$("grid").className="free";document.documentElement.classList.add("free");$("vf").className="on";$("vu").className=""};
@@ -198,7 +208,7 @@ function render(){
   renderIntro();updPick();
   const e=$("empty");e.hidden=!!list.length;e.textContent=all.length?"Aucune photo ne correspond à ces filtres.":"L'archive est vide.";
   $("foot").innerHTML=cfg?`<button id="fA">Ajouter des photos</button><button id="fC">Catégories</button><button id="fS">Sélectionner pour supprimer</button><button id="fX">Déconnexion</button>`:`<button id="fL">Administration</button>`;
-  $("foot").insertAdjacentHTML("beforeend",'<span style="margin-left:auto">version 14</span>');
+  $("foot").insertAdjacentHTML("beforeend",'<span style="margin-left:auto">version 15</span>');
 }
 async function newCat(parent=""){const nm=clean(prompt(parent?"Nom de la sous-catégorie de « "+label(parent)+" » :":"Nom de la nouvelle catégorie :")||"");if(!nm)return;const path=parent?parent+SEP+nm:nm;try{await commit(j=>addPath(j,path),parent?"Sous-catégorie":"Catégorie");say(parent?"Sous-catégorie ajoutée":"Catégorie ajoutée")}catch(e){fail(e)}}
 function setOpen(d){openDim=d;document.querySelectorAll("#filters .dim").forEach(b=>{b.classList.toggle("open",b.dataset.tog===d);b.setAttribute("aria-expanded",b.dataset.tog===d)});document.querySelectorAll("#filters .fp").forEach(f=>f.classList.toggle("open",f.dataset.d===d))}
@@ -285,17 +295,28 @@ $("pv").onclick=()=>open(cur-1);$("nx").onclick=()=>open(cur+1);$("lbX").onclick
 document.addEventListener("keydown",e=>{if(!$("lbOv").classList.contains("open")||/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;if(e.key==="ArrowLeft")open(cur-1);if(e.key==="ArrowRight")open(cur+1);if(e.key==="Escape")$("lbOv").classList.remove("open")});
 
 /* page d'accueil : textes déplaçables */
+const FONTS={helvetica:["Helvetica",'"Helvetica Neue",Helvetica,Arial,sans-serif'],georgia:["Georgia",'Georgia,"Times New Roman",serif'],times:["Times New Roman",'"Times New Roman",Times,serif'],garamond:["Garamond",'"Cormorant Garamond",Garamond,serif'],verdana:["Verdana",'Verdana,Geneva,sans-serif'],mono:["Machine à écrire",'"IBM Plex Mono","Courier New",monospace'],hand:["Manuscrit",'Caveat,"Bradley Hand",cursive']};
 const DEF={id:"default",text:"I3P est un inventaire photographique constitué au fil des voyages et des découvertes. Les images y sont collectées et classées selon leurs typologies, formes, points de vue ou lieux, pour composer une bibliothèque ouverte du paysage et de l’architecture ordinaire, loin des images lisses et idéalisées. Un regard sur le réel, ses imperfections et la richesse des territoires habités.",x:6,y:70};
 const itx=j=>{if(!j.intro)j.intro={};if(!j.intro.texts)j.intro.texts=[{...DEF}];return j.intro.texts};
-function renderIntro(){if(!$("stOv").classList.contains("open"))applyStyle(data.intro?.style||{});const b=$("itexts");b.innerHTML="";(data.intro?.texts??[DEF]).forEach(t=>{const d=document.createElement("div");d.className="it"+(cfg?" ed":"")+(t.id===selId?" sel":"");d.textContent=t.text;d.style.left=t.x+"%";d.style.top=t.y+"%";d.dataset.id=t.id;b.appendChild(d)});$("itools").hidden=!cfg}
-let drag=null,selId=null,nudgeT=null;const fail=e=>say("Erreur : "+e.message+(/^40[13]/.test(e.message)?" — jeton expiré ou sans droit d'écriture : reconnecte-toi avec un nouveau jeton.":"")+" (touche ce message pour le fermer)",0);
-$("itexts").addEventListener("pointerdown",e=>{const d=e.target.closest(".it");if(!cfg||!d)return;e.stopPropagation();e.preventDefault();selId=d.dataset.id;document.querySelectorAll(".it.sel").forEach(x=>x.classList.remove("sel"));d.classList.add("sel");drag={d,ox:e.clientX-d.offsetLeft,oy:e.clientY-d.offsetTop};d.setPointerCapture(e.pointerId)});
-$("itexts").addEventListener("pointermove",e=>{if(!drag)return;const x=Math.max(0,Math.min(95,(e.clientX-drag.ox)/innerWidth*100)),y=Math.max(0,Math.min(95,(e.clientY-drag.oy)/innerHeight*100));drag.d.style.left=x+"%";drag.d.style.top=y+"%";drag.x=x;drag.y=y});
-$("itexts").addEventListener("pointerup",async()=>{if(!drag)return;const{d,x,y}=drag;drag=null;if(x===undefined)return;try{await commit(j=>{const t=itx(j).find(a=>a.id===d.dataset.id);if(t){t.x=+x.toFixed(2);t.y=+y.toFixed(2)}},"Déplacement du texte")}catch(e){fail(e)}});
+function renderIntro(){if(!$("stOv").classList.contains("open"))applyStyle(data.intro?.style||{});const b=$("itexts");b.innerHTML="";(data.intro?.texts??[DEF]).forEach(t=>{const d=document.createElement("div");d.className="it"+(cfg?" ed":"")+(t.id===selId?" sel":"");d.textContent=t.text;d.style.left=t.x+"%";d.style.top=t.y+"%";d.dataset.id=t.id;if(t.font&&FONTS[t.font])d.style.fontFamily=FONTS[t.font][1];d.style.textAlign=t.align||"left";if(t.w){d.style.width=t.w+"%";d.style.maxWidth="none"}if(cfg&&t.id===selId)d.insertAdjacentHTML("beforeend",'<i class="rz"></i>');b.appendChild(d)});$("itools").hidden=!cfg;syncTools()}
+let drag=null,selId=null,nudgeT=null,rsz=null,wT=null;const fail=e=>say("Erreur : "+e.message+(/^40[13]/.test(e.message)?" — jeton expiré ou sans droit d'écriture : reconnecte-toi avec un nouveau jeton.":"")+" (touche ce message pour le fermer)",0);
+$("itexts").addEventListener("pointerdown",e=>{const rz=e.target.closest(".rz");if(cfg&&rz){const d=rz.parentElement;e.stopPropagation();e.preventDefault();rsz={d,sx:e.clientX,sw:d.offsetWidth};rz.setPointerCapture(e.pointerId);return}const d=e.target.closest(".it");if(!cfg||!d)return;e.stopPropagation();e.preventDefault();selId=d.dataset.id;document.querySelectorAll(".it.sel").forEach(x=>x.classList.remove("sel"));document.querySelectorAll(".rz").forEach(x=>x.remove());d.classList.add("sel");d.insertAdjacentHTML("beforeend",'<i class="rz"></i>');syncTools();drag={d,ox:e.clientX-d.offsetLeft,oy:e.clientY-d.offsetTop};d.setPointerCapture(e.pointerId)});
+$("itexts").addEventListener("pointermove",e=>{if(rsz){const w=Math.max(8,Math.min(95,(rsz.sw+e.clientX-rsz.sx)/innerWidth*100));rsz.d.style.width=w+"%";rsz.d.style.maxWidth="none";rsz.w=w;return}if(!drag)return;const x=Math.max(0,Math.min(95,(e.clientX-drag.ox)/innerWidth*100)),y=Math.max(0,Math.min(95,(e.clientY-drag.oy)/innerHeight*100));drag.d.style.left=x+"%";drag.d.style.top=y+"%";drag.x=x;drag.y=y});
+$("itexts").addEventListener("pointerup",async()=>{if(rsz){const{d,w}=rsz;rsz=null;if(w!==undefined){syncTools();saveText(d.dataset.id,{w:+w.toFixed(1)})}return}if(!drag)return;const{d,x,y}=drag;drag=null;if(x===undefined)return;try{await commit(j=>{const t=itx(j).find(a=>a.id===d.dataset.id);if(t){t.x=+x.toFixed(2);t.y=+y.toFixed(2)}},"Déplacement du texte")}catch(e){fail(e)}});
 $("itexts").addEventListener("dblclick",async e=>{const d=e.target.closest(".it");if(!cfg||!d)return;const t=(data.intro?.texts??[DEF]).find(a=>a.id===d.dataset.id);const v=prompt("Modifier le texte (laisse vide pour le supprimer) :",t?t.text:"");if(v===null)return;
   try{await commit(j=>{const a=itx(j),i=a.findIndex(x=>x.id===d.dataset.id);if(i<0)return;if(v.trim())a[i].text=v.trim();else a.splice(i,1)},"Texte")}catch(e){fail(e)}});
-$("addT").onclick=async e=>{e.stopPropagation();const v=(prompt("Texte à ajouter :")||"").trim();if(!v)return;try{await commit(j=>itx(j).push({id:"t"+Date.now(),text:v,x:12,y:70}),"Nouveau texte")}catch(e){fail(e)}};
+$("addT").onclick=async e=>{e.stopPropagation();const v=(prompt("Texte à ajouter :")||"").trim();if(!v)return;const id="t"+Date.now();selId=id;try{await commit(j=>itx(j).push({id,text:v,x:12,y:62,w:30}),"Nouveau texte")}catch(e){fail(e)}};
 
+/* réglages d'une zone de texte */
+async function saveText(id,props){try{await commit(j=>{const t=itx(j).find(a=>a.id===id);if(t)Object.assign(t,props)},"Texte")}catch(e){fail(e)}}
+const selEl=()=>document.querySelector(`.it[data-id="${selId}"]`),selTxt=()=>(data.intro?.texts??[DEF]).find(a=>a.id===selId);
+function syncTools(){const bar=$("ttools"),t=selTxt();bar.hidden=!(cfg&&t);if(!(cfg&&t))return;const el=selEl();$("tF").value=t.font||"helvetica";bar.querySelectorAll("[data-al]").forEach(b=>b.classList.toggle("on",b.dataset.al===(t.align||"left")));$("tW").value=t.w||(el?Math.round(el.offsetWidth/innerWidth*100):30)}
+$("tF").innerHTML=Object.entries(FONTS).map(([k,v])=>`<option value="${k}">${v[0]}</option>`).join("");
+$("tF").onchange=e=>{const el=selEl();if(el)el.style.fontFamily=FONTS[e.target.value][1];saveText(selId,{font:e.target.value})};
+$("ttools").addEventListener("click",e=>{const b=e.target.closest("[data-al]");if(!b)return;const el=selEl(),t=selTxt();if(!el||!t)return;const pr={align:b.dataset.al};
+  if(!t.w){pr.w=Math.round(el.offsetWidth/innerWidth*100);el.style.width=pr.w+"%";el.style.maxWidth="none"}el.style.textAlign=pr.align;saveText(selId,pr)});
+$("tW").oninput=e=>{const el=selEl();if(!el)return;el.style.width=e.target.value+"%";el.style.maxWidth="none";clearTimeout(wT);const id=selId,w=+e.target.value;wT=setTimeout(()=>saveText(id,{w}),700)};
+$("tDel").onclick=async()=>{if(!selId||!confirm("Supprimer cette zone de texte ?"))return;const id=selId;selId=null;try{await commit(j=>{const a=itx(j),i=a.findIndex(x=>x.id===id);if(i>=0)a.splice(i,1)},"Texte supprimé")}catch(e){fail(e)}};
 /* style de la page d'accueil */
 const SD={ti:false,bg:"#000000",lc:"#ffffff",ls:1,tc:"#ffffff",ts:14,bgFile:"",dim:.35};
 let draft=null,bgBlob=null,bgLocal="",prevLocal="";
