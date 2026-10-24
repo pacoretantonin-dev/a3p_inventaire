@@ -185,7 +185,8 @@ const src=p=>local[p.file]||"photos/"+encodeURIComponent(p.file);
 const vals=(d,k)=>{const s=new Set(data.taxonomy[k]||[]);data.photos.forEach(p=>p[d]&&s.add(p[d]));return[...s]};
 const SEP=" > ",clean=x=>x.split(">").map(y=>y.trim()).filter(Boolean).join(SEP),label=x=>x.split(SEP).join(" › ");
 const inCat=(p,x)=>p.category===x||(p.category||"").startsWith(x+SEP);
-const shown=()=>sorted().filter(p=>!sel.category.length||sel.category.some(x=>inCat(p,x)));
+const rnd=new Map(),rk=f=>{if(!rnd.has(f))rnd.set(f,Math.random());return rnd.get(f)};
+const shown=()=>{const l=sorted().filter(p=>!sel.category.length||sel.category.some(x=>inCat(p,x)));if(!sel.category.length)l.sort((a,b)=>rk(a.file)-rk(b.file));return l};
 function tree(){const kids=new Map([["",[]]]),seen=new Set(),add=q=>{const a=q.split(SEP);for(let i=1;i<=a.length;i++){const path=a.slice(0,i).join(SEP);if(seen.has(path))continue;seen.add(path);kids.get(a.slice(0,i-1).join(SEP)).push(path);kids.set(path,[])}};
   (data.taxonomy.categories||[]).forEach(add);data.photos.forEach(p=>p.category&&add(p.category));const out=[],walk=(par,d)=>kids.get(par).forEach(path=>{out.push({path,name:path.split(SEP).pop(),depth:d});walk(path,d+1)});walk("",0);return out}
 const addPath=(j,path)=>{const a=j.taxonomy.categories=j.taxonomy.categories||[];if(!a.includes(path))a.push(path)};
@@ -208,7 +209,7 @@ function render(){
   renderIntro();updPick();
   const e=$("empty");e.hidden=!!list.length;e.textContent=all.length?"Aucune photo ne correspond à ces filtres.":"L'archive est vide.";
   $("foot").innerHTML=cfg?`<button id="fA">Ajouter des photos</button><button id="fC">Catégories</button><button id="fS">Sélectionner pour supprimer</button><button id="fX">Déconnexion</button>`:`<button id="fL">Administration</button>`;
-  $("foot").insertAdjacentHTML("beforeend",'<span style="margin-left:auto">version 15</span>');
+  $("foot").insertAdjacentHTML("beforeend",'<span style="margin-left:auto">version 16</span>');
 }
 async function newCat(parent=""){const nm=clean(prompt(parent?"Nom de la sous-catégorie de « "+label(parent)+" » :":"Nom de la nouvelle catégorie :")||"");if(!nm)return;const path=parent?parent+SEP+nm:nm;try{await commit(j=>addPath(j,path),parent?"Sous-catégorie":"Catégorie");say(parent?"Sous-catégorie ajoutée":"Catégorie ajoutée")}catch(e){fail(e)}}
 function setOpen(d){openDim=d;document.querySelectorAll("#filters .dim").forEach(b=>{b.classList.toggle("open",b.dataset.tog===d);b.setAttribute("aria-expanded",b.dataset.tog===d)});document.querySelectorAll("#filters .fp").forEach(f=>f.classList.toggle("open",f.dataset.d===d))}
