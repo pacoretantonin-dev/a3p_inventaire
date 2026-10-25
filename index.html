@@ -169,7 +169,7 @@ textarea{width:100%;padding:8px;border:1px solid #000;border-radius:0;background
 <div class="foot"><button id="sNo">Annuler</button><button class="b" id="sOk">Enregistrer</button></div></div></div>
 <input type="file" id="bgIn" accept="image/*" hidden>
 <input type="file" id="fileIn" accept="image/*" multiple hidden>
-<div id="pickbar" hidden><span id="pickN"></span><select id="pickCat" style="width:auto"></select><button id="pickSet" class="b">Classer</button><button id="pickDel" class="b d">Supprimer</button><button id="pickNo">Annuler</button></div>
+<div id="pickbar" hidden><span id="pickN"></span><select id="pickCat" style="width:auto"></select><button id="pickSet" class="b">Ajouter</button><button id="pickDel" class="b d">Supprimer</button><button id="pickNo">Annuler</button></div>
 <div id="st"></div>
 
 <script>
@@ -184,11 +184,12 @@ const numOf=(all,p)=>String(all.indexOf(p)+1).padStart(4,"0");
 const src=p=>local[p.file]||"photos/"+encodeURIComponent(p.file);
 const vals=(d,k)=>{const s=new Set(data.taxonomy[k]||[]);data.photos.forEach(p=>p[d]&&s.add(p[d]));return[...s]};
 const SEP=" > ",clean=x=>x.split(">").map(y=>y.trim()).filter(Boolean).join(SEP),label=x=>x.split(SEP).join(" › ");
-const inCat=(p,x)=>p.category===x||(p.category||"").startsWith(x+SEP);
+const cats=p=>Array.isArray(p.categories)?p.categories:(p.category?[p.category]:[]);
+const inCat=(p,x)=>cats(p).some(c=>c===x||c.startsWith(x+SEP));
 const rnd=new Map(),rk=f=>{if(!rnd.has(f))rnd.set(f,Math.random());return rnd.get(f)};
 const shown=()=>{const l=sorted().filter(p=>!sel.category.length||sel.category.some(x=>inCat(p,x)));if(!sel.category.length)l.sort((a,b)=>rk(a.file)-rk(b.file));return l};
 function tree(){const kids=new Map([["",[]]]),seen=new Set(),add=q=>{const a=q.split(SEP);for(let i=1;i<=a.length;i++){const path=a.slice(0,i).join(SEP);if(seen.has(path))continue;seen.add(path);kids.get(a.slice(0,i-1).join(SEP)).push(path);kids.set(path,[])}};
-  (data.taxonomy.categories||[]).forEach(add);data.photos.forEach(p=>p.category&&add(p.category));const out=[],walk=(par,d)=>kids.get(par).forEach(path=>{out.push({path,name:path.split(SEP).pop(),depth:d});walk(path,d+1)});walk("",0);return out}
+  (data.taxonomy.categories||[]).forEach(add);data.photos.forEach(p=>cats(p).forEach(add));const out=[],walk=(par,d)=>kids.get(par).forEach(path=>{out.push({path,name:path.split(SEP).pop(),depth:d});walk(path,d+1)});walk("",0);return out}
 const addPath=(j,path)=>{const a=j.taxonomy.categories=j.taxonomy.categories||[];if(!a.includes(path))a.push(path)};
 
 /* intro */
@@ -209,7 +210,7 @@ function render(){
   renderIntro();updPick();
   const e=$("empty");e.hidden=!!list.length;e.textContent=all.length?"Aucune photo ne correspond à ces filtres.":"L'archive est vide.";
   $("foot").innerHTML=cfg?`<button id="fA">Ajouter des photos</button><button id="fC">Catégories</button><button id="fS">Sélectionner pour supprimer</button><button id="fX">Déconnexion</button>`:`<button id="fL">Administration</button>`;
-  $("foot").insertAdjacentHTML("beforeend",'<span style="margin-left:auto">version 16</span>');
+  $("foot").insertAdjacentHTML("beforeend",'<span style="margin-left:auto">version 17</span>');
 }
 async function newCat(parent=""){const nm=clean(prompt(parent?"Nom de la sous-catégorie de « "+label(parent)+" » :":"Nom de la nouvelle catégorie :")||"");if(!nm)return;const path=parent?parent+SEP+nm:nm;try{await commit(j=>addPath(j,path),parent?"Sous-catégorie":"Catégorie");say(parent?"Sous-catégorie ajoutée":"Catégorie ajoutée")}catch(e){fail(e)}}
 function setOpen(d){openDim=d;document.querySelectorAll("#filters .dim").forEach(b=>{b.classList.toggle("open",b.dataset.tog===d);b.setAttribute("aria-expanded",b.dataset.tog===d)});document.querySelectorAll("#filters .fp").forEach(f=>f.classList.toggle("open",f.dataset.d===d))}
@@ -263,7 +264,7 @@ $("adOk").onclick=async()=>{const meta=rd($("adForm")),out=[];$("adOv").classLis
   for(const f of pending){say(`Import ${++n}/${pending.length}…`,0);
     try{const b=await resize(f),name=Date.now()+"-"+n+".jpg";local[name]=URL.createObjectURL(b);
       await gh("photos/"+name,{method:"PUT",body:{message:"Ajout "+name,content:await bb(b),branch:cfg.branch}});
-      out.push({file:name,...meta,date:new Date().toISOString()})}catch(err){say("Échec : "+err.message,6000)}}
+      out.push({file:name,categories:meta.category?[meta.category]:[],date:new Date().toISOString()})}catch(err){say("Échec : "+err.message,6000)}}
   pending=[];if(out.length){try{await commit(j=>j.photos.push(...out),"Ajout de "+out.length+" photo(s)");say("Importé. En ligne sur le site public dans environ une minute.",6000)}catch(err){say("Échec : "+err.message,6000)}}};
 
 /* catégories */
@@ -276,19 +277,22 @@ $("mnBody").onclick=async e=>{const b=e.target.closest("button");if(!b)return;co
     else if(d.ren!==undefined){const old=d.ren,parts=old.split(SEP),nv=clean(prompt("Nouveau nom :",parts.pop())||"");if(!nv)return;const np=[...parts,nv].join(SEP);if(np===old)return;
       if(tree().some(n=>n.path===np)){say("Ce nom existe déjà à cet endroit",4000);return}
       const ren=x=>x===old||x.startsWith(old+SEP)?np+x.slice(old.length):x;
-      await commit(j=>{j.taxonomy.categories=(j.taxonomy.categories||[]).map(ren);j.photos.forEach(p=>{if(p.category)p.category=ren(p.category)})},"Renommage")}
+      await commit(j=>{j.taxonomy.categories=(j.taxonomy.categories||[]).map(ren);j.photos.forEach(p=>{const c=cats(p);if(c.length){p.categories=[...new Set(c.map(ren))];delete p.category}})},"Renommage")}
     else if(d.del!==undefined){const old=d.del,n=data.photos.filter(p=>inCat(p,old)).length,inn=x=>x===old||x.startsWith(old+SEP);
-      if(!confirm("Supprimer « "+label(old)+" » et ses sous-catégories ?"+(n?" "+n+" photo(s) resteront sans catégorie.":"")))return;
-      await commit(j=>{j.taxonomy.categories=(j.taxonomy.categories||[]).filter(x=>!inn(x));j.photos.forEach(p=>{if(p.category&&inn(p.category))p.category=""})},"Suppression de catégorie")}
+      if(!confirm("Supprimer « "+label(old)+" » et ses sous-catégories ?"+(n?" "+n+" photo(s) perdront cette catégorie.":"")))return;
+      await commit(j=>{j.taxonomy.categories=(j.taxonomy.categories||[]).filter(x=>!inn(x));j.photos.forEach(p=>{const c=cats(p);if(c.length){p.categories=c.filter(x=>!inn(x));delete p.category}})},"Suppression de catégorie")}
     else return;
     man()}catch(err){fail(err)}};
 
 /* visionneuse */
 function open(i){const l=shown();if(!l.length)return;cur=(i+l.length)%l.length;const p=l[cur];$("lbImg").src=src(p);
-  $("lbBody").innerHTML=cfg?`<div class="foot" style="justify-content:space-between;margin:0 0 6px"><button class="b d" id="del">Supprimer</button><button class="b" id="sv">Enregistrer</button></div>${selects(p)}<label>Texte</label><textarea id="eN" rows="6" placeholder="Écris ici ce que tu veux sur cette photo">${esc(p.note)}</textarea>`
-   :`${DIMS.map(([d,l])=>p[d]?`<div style="color:var(--g)">${l} : <span style="color:#000">${esc(label(p[d]))}</span></div>`:"").join("")}${p.note?`<div class="note">${esc(p.note)}</div>`:""}`;
-  if(cfg){wire($("lbBody"));
-   $("sv").onclick=async()=>{const o={...rd($("lbBody")),note:$("eN").value};try{await commit(j=>Object.assign(j.photos.find(x=>x.file===p.file)||{},o),"Modification");say("Enregistré")}catch(e){fail(e)}};
+  $("lbBody").innerHTML=cfg?`<div class="foot" style="justify-content:space-between;margin:0 0 6px"><button class="b d" id="del">Supprimer</button><button class="b" id="sv">Enregistrer</button></div><label>Catégories</label><div id="cEd"></div><label>Texte</label><textarea id="eN" rows="6" placeholder="Écris ici ce que tu veux sur cette photo">${esc(p.note)}</textarea>`
+   :`${cats(p).length?`<div style="color:var(--g)">Catégories : ${cats(p).map(c=>`<span style="color:#000">${esc(label(c))}</span>`).join(" · ")}</div>`:""}${p.note?`<div class="note">${esc(p.note)}</div>`:""}`;
+  if(cfg){let dc=[...cats(p)];
+   const drawC=()=>{$("cEd").innerHTML=`<div class="tags">${dc.map((c,i)=>`<span>${esc(label(c))}<button data-ci="${i}" aria-label="Retirer">×</button></span>`).join("")||'<span style="color:var(--g)">Aucune</span>'}</div><select id="cAdd"><option value="">+ Ajouter une catégorie…</option>${tree().filter(n=>!dc.includes(n.path)).map(n=>`<option value="${esc(n.path)}">${"\u00a0\u00a0".repeat(n.depth)}${esc(n.name)}</option>`).join("")}<option value="__n">Nouvelle catégorie ou sous-catégorie…</option></select>`;
+    $("cAdd").onchange=async e=>{let v=e.target.value;if(!v)return;if(v==="__n"){v=clean(prompt("Nom de la nouvelle catégorie (pour une sous-catégorie, écris : Parent > Sous-catégorie) :")||"");if(!v){drawC();return}try{await commit(j=>addPath(j,v),"Catégorie")}catch(err){fail(err);drawC();return}}if(!dc.includes(v))dc.push(v);drawC()}};
+   $("cEd").onclick=e=>{const b=e.target.closest("[data-ci]");if(b){dc.splice(+b.dataset.ci,1);drawC()}};drawC();
+   $("sv").onclick=async()=>{const o={categories:[...dc],note:$("eN").value};try{await commit(j=>{const q=j.photos.find(x=>x.file===p.file);if(q){Object.assign(q,o);delete q.category}},"Modification");say("Enregistré")}catch(e){fail(e)}};
    $("del").onclick=async()=>{if(!confirm("Supprimer cette photo définitivement ?"))return;say("Suppression…",0);try{await commit(j=>{j.photos=j.photos.filter(x=>x.file!==p.file)},"Suppression");try{await delFile(p.file)}catch(e){}$("lbOv").classList.remove("open");say("Supprimé")}catch(e){fail(e)}}}
   $("lbOv").classList.add("open")}
 $("grid").onclick=e=>{const c=e.target.closest(".card");if(!c)return;if(pickMode){const f=c.dataset.f;picked.has(f)?picked.delete(f):picked.add(f);updPick();return}open(shown().findIndex(p=>p.file===c.dataset.f))};
@@ -347,11 +351,11 @@ let pickMode=false;const picked=new Set();
 async function delFile(f){for(let i=0;i<3;i++){let sha;try{sha=(await gh("photos/"+encodeURIComponent(f))).sha}catch(e){if(/^404/.test(e.message))return;throw e}
   try{await gh("photos/"+encodeURIComponent(f),{method:"DELETE",body:{message:"Suppression "+f,sha,branch:cfg.branch}});return}catch(e){if(i<2&&/^(409|422)/.test(e.message)){await new Promise(r=>setTimeout(r,800));continue}throw e}}}
 function updPick(){document.querySelectorAll(".card").forEach(c=>c.classList.toggle("picked",picked.has(c.dataset.f)));$("pickN").textContent=picked.size+" sélectionnée"+(picked.size>1?"s":"");$("pickDel").disabled=!picked.size;$("pickSet").disabled=!picked.size}
-function startPick(){pickMode=true;picked.clear();$("pickCat").innerHTML='<option value="">Classer dans…</option>'+tree().map(n=>`<option value="${esc(n.path)}">${"\u00a0\u00a0".repeat(n.depth)}${esc(n.name)}</option>`).join("");$("pickbar").hidden=false;updPick()}
+function startPick(){pickMode=true;picked.clear();$("pickCat").innerHTML='<option value="">Ajouter à la catégorie…</option>'+tree().map(n=>`<option value="${esc(n.path)}">${"\u00a0\u00a0".repeat(n.depth)}${esc(n.name)}</option>`).join("");$("pickbar").hidden=false;updPick()}
 function endPick(){pickMode=false;picked.clear();$("pickbar").hidden=true;updPick()}
 $("pickNo").onclick=endPick;
 $("pickSet").onclick=async()=>{const files=[...picked],c=$("pickCat").value;if(!files.length||!c){say("Choisis une catégorie dans la liste",3000);return}say("Classement…",0);
-  try{await commit(j=>{j.photos.forEach(p=>{if(files.includes(p.file))p.category=c})},"Classement");endPick();say("Classé dans « "+c+" »")}catch(e){fail(e)}};
+  try{await commit(j=>{j.photos.forEach(p=>{if(files.includes(p.file)){const c0=cats(p);if(!c0.includes(c))p.categories=[...c0,c];delete p.category}})},"Classement");endPick();say("Ajouté à « "+label(c)+" »")}catch(e){fail(e)}};
 $("pickDel").onclick=async()=>{const files=[...picked];if(!files.length||!confirm("Supprimer définitivement "+files.length+" photo(s) ?"))return;say("Suppression…",0);
   try{await commit(j=>{j.photos=j.photos.filter(x=>!files.includes(x.file))},"Suppression de "+files.length+" photo(s)");for(const f of files){try{await delFile(f)}catch(e){}}endPick();say("Supprimé")}catch(e){fail(e)}};
 
