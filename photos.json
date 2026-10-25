@@ -73,7 +73,8 @@
    "Infrastructures de circulation > Rue",
    "Infrastructures de circulation > Chemin",
    "Infrastructures de circulation > Ouvrages",
-   "Détail Architectural"
+   "Détail Architectural",
+   "Détail Architectural > Entrée"
   ],
   "typologies": [
    "Habitat",
