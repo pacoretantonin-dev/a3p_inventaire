@@ -2,9 +2,7 @@
  "taxonomy": {
   "categories": [
    "Paysage",
-   "Architecture",
-   "Objet",
-   "Architecture > commerce"
+   "Objet"
   ],
   "typologies": [
    "Habitat",
@@ -84,9 +82,11 @@
   },
   {
    "file": "1792871124571-14.jpg",
-   "category": "Paysage",
    "date": "2026-10-24T19:45:26.623Z",
-   "note": ""
+   "note": "",
+   "categories": [
+    "Paysage"
+   ]
   },
   {
    "file": "1792871126832-15.jpg",
@@ -285,9 +285,11 @@
   },
   {
    "file": "1792871573511-31.jpg",
-   "category": "Paysage",
    "date": "2026-10-24T19:52:55.128Z",
-   "note": ""
+   "note": "",
+   "categories": [
+    "Paysage"
+   ]
   },
   {
    "file": "1792871575317-32.jpg",
@@ -426,9 +428,9 @@
   },
   {
    "file": "1792875084690-9.jpg",
-   "category": "Architecture > commerce",
    "date": "2026-10-24T20:51:27.323Z",
-   "note": ""
+   "note": "",
+   "categories": []
   },
   {
    "file": "1792875088446-10.jpg",
