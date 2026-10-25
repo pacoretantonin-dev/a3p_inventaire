@@ -67,7 +67,8 @@
    "Énergie > Eau",
    "Énergie > Électricité",
    "Énergie > Carburant",
-   "Infrastructures de circulation"
+   "Infrastructures de circulation",
+   "Infrastructures de circulation > Voie Rapide"
   ],
   "typologies": [
    "Habitat",
