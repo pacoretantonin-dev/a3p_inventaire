@@ -127,6 +127,8 @@ textarea{width:100%;padding:8px;border:1px solid #000;border-radius:0;background
 #ttools label{display:flex;gap:6px;align-items:center;margin:0;color:#fff;font-size:12px}
 #ttools input[type=range]{width:110px;border:0;padding:0}
 .rz{position:absolute;right:-10px;bottom:-10px;width:12px;height:12px;background:#fff;border:1px solid #000;cursor:ew-resize;touch-action:none}
+.car{width:20px;flex:none;text-align:left;font-size:11px;color:var(--g)}
+.opt.has::after{content:" •"}
 </style>
 </head>
 <body>
@@ -190,6 +192,10 @@ const rnd=new Map(),rk=f=>{if(!rnd.has(f))rnd.set(f,Math.random());return rnd.ge
 const shown=()=>{const l=sorted().filter(p=>!sel.category.length||sel.category.some(x=>inCat(p,x)));if(!sel.category.length)l.sort((a,b)=>rk(a.file)-rk(b.file));return l};
 function tree(){const kids=new Map([["",[]]]),seen=new Set(),add=q=>{const a=q.split(SEP);for(let i=1;i<=a.length;i++){const path=a.slice(0,i).join(SEP);if(seen.has(path))continue;seen.add(path);kids.get(a.slice(0,i-1).join(SEP)).push(path);kids.set(path,[])}};
   (data.taxonomy.categories||[]).forEach(add);data.photos.forEach(p=>cats(p).forEach(add));const out=[],walk=(par,d)=>kids.get(par).forEach(path=>{out.push({path,name:path.split(SEP).pop(),depth:d});walk(path,d+1)});walk("",0);return out}
+const exp=new Set();
+function nodesHtml(d){const T=tree(),par=new Set(T.map(n=>n.path.split(SEP).slice(0,-1).join(SEP)).filter(Boolean));
+  return T.filter(n=>{const a=n.path.split(SEP);for(let i=1;i<a.length;i++)if(!exp.has(a.slice(0,i).join(SEP)))return false;return true}).map(n=>{const kids=par.has(n.path),on=sel[d].includes(n.path),has=sel[d].some(x=>x.startsWith(n.path+SEP));
+    return `<div class="node" style="margin-left:${n.depth*24}px">${kids?`<button class="car" data-exp="${esc(n.path)}" aria-expanded="${exp.has(n.path)}" aria-label="Déplier ${esc(n.name)}">${exp.has(n.path)?"▾":"▸"}</button>`:'<span class="car"></span>'}<button class="opt ${on?"on":""}${has?" has":""}" data-d="${d}" data-v="${esc(n.path)}">${esc(n.name)}</button>${cfg?`<button class="sub" data-addsub="${esc(n.path)}">+ sous-catégorie</button>`:""}</div>`}).join("")}
 const addPath=(j,path)=>{const a=j.taxonomy.categories=j.taxonomy.categories||[];if(!a.includes(path))a.push(path)};
 
 /* intro */
@@ -202,7 +208,7 @@ $("vf").onclick=()=>{$("grid").className="free";document.documentElement.classLi
 function render(){
   {const ok=new Set(tree().map(n=>n.path));sel.category=sel.category.filter(x=>ok.has(x))}
   $("filters").innerHTML=`<div class="bar">${DIMS.map(([d,l])=>`<button class="dim ${openDim===d?"open":""}" data-tog="${d}" aria-expanded="${openDim===d}">${l}${sel[d].length?` (${sel[d].length})`:""}<span class="ar">▾</span></button>`).join("")}</div>`
-   +DIMS.map(([d,l,k])=>`<div class="fp ${openDim===d?"open":""}" data-d="${d}"><div class="in"><div class="list">${tree().map(n=>`<div class="node" style="margin-left:${n.depth*24}px"><button class="opt ${sel[d].includes(n.path)?"on":""}" data-d="${d}" data-v="${esc(n.path)}">${esc(n.name)}</button>${cfg?`<button class="sub" data-addsub="${esc(n.path)}">+ sous-catégorie</button>`:""}</div>`).join("")||'<span style="color:var(--g)">Aucune valeur</span>'}${cfg?'<button class="opt add" data-newcat="1">+ Nouvelle catégorie</button>':""}</div></div></div>`).join("")
+   +DIMS.map(([d,l,k])=>`<div class="fp ${openDim===d?"open":""}" data-d="${d}"><div class="in"><div class="list">${nodesHtml(d)||'<span style="color:var(--g)">Aucune valeur</span>'}${cfg?'<button class="opt add" data-newcat="1">+ Nouvelle catégorie</button>':""}</div></div></div>`).join("")
    +(()=>{const ch=DIMS.flatMap(([d])=>sel[d].map(v=>[d,v]));return ch.length?`<div class="chosen">${ch.map(([d,v])=>`<span class="chip">${esc(label(v))}<button data-rm="${d}" data-val="${esc(v)}" aria-label="Retirer ${esc(v)}">×</button></span>`).join("")}<button class="clr" data-clear="1">Tout effacer</button></div>`:""})();
   const all=sorted(),list=shown();
   $("count").textContent=all.length?`${list.length} / ${all.length}`:"";
@@ -210,15 +216,18 @@ function render(){
   renderIntro();updPick();
   const e=$("empty");e.hidden=!!list.length;e.textContent=all.length?"Aucune photo ne correspond à ces filtres.":"L'archive est vide.";
   $("foot").innerHTML=cfg?`<button id="fA">Ajouter des photos</button><button id="fC">Catégories</button><button id="fS">Sélectionner pour supprimer</button><button id="fX">Déconnexion</button>`:`<button id="fL">Administration</button>`;
-  $("foot").insertAdjacentHTML("beforeend",'<span style="margin-left:auto">version 17</span>');
+  $("foot").insertAdjacentHTML("beforeend",'<span style="margin-left:auto">version 18</span>');
 }
-async function newCat(parent=""){const nm=clean(prompt(parent?"Nom de la sous-catégorie de « "+label(parent)+" » :":"Nom de la nouvelle catégorie :")||"");if(!nm)return;const path=parent?parent+SEP+nm:nm;try{await commit(j=>addPath(j,path),parent?"Sous-catégorie":"Catégorie");say(parent?"Sous-catégorie ajoutée":"Catégorie ajoutée")}catch(e){fail(e)}}
+async function newCat(parent=""){const nm=clean(prompt(parent?"Nom de la sous-catégorie de « "+label(parent)+" » :":"Nom de la nouvelle catégorie :")||"");if(!nm)return;const path=parent?parent+SEP+nm:nm;if(parent)exp.add(parent);try{await commit(j=>addPath(j,path),parent?"Sous-catégorie":"Catégorie");say(parent?"Sous-catégorie ajoutée":"Catégorie ajoutée")}catch(e){fail(e)}}
 function setOpen(d){openDim=d;document.querySelectorAll("#filters .dim").forEach(b=>{b.classList.toggle("open",b.dataset.tog===d);b.setAttribute("aria-expanded",b.dataset.tog===d)});document.querySelectorAll("#filters .fp").forEach(f=>f.classList.toggle("open",f.dataset.d===d))}
 $("filters").onclick=e=>{const t=e.target.closest("button");if(!t)return;
   if(t.dataset.newcat){newCat();return}
   if(t.dataset.addsub!==undefined){newCat(t.dataset.addsub);return}
+  if(t.dataset.exp!==undefined){const v=t.dataset.exp;exp.has(v)?exp.delete(v):exp.add(v);render();return}
   if(t.dataset.tog){setOpen(openDim===t.dataset.tog?"":t.dataset.tog);return}
-  if(t.dataset.v!==undefined){const a=sel[t.dataset.d],i=a.indexOf(t.dataset.v);i<0?a.push(t.dataset.v):a.splice(i,1);render();return}
+  if(t.dataset.v!==undefined){const a=sel[t.dataset.d],v=t.dataset.v,i=a.indexOf(v);
+    if(i>=0){a.splice(i,1);exp.delete(v)}else{sel[t.dataset.d]=a.filter(x=>!(x.startsWith(v+SEP)||v.startsWith(x+SEP)));sel[t.dataset.d].push(v);exp.add(v)}
+    render();return}
   if(t.dataset.rm!==undefined){const a=sel[t.dataset.rm];a.splice(a.indexOf(t.dataset.val),1);render();return}
   if(t.dataset.clear!==undefined){DIMS.forEach(([d])=>sel[d]=[]);render()}};
 document.addEventListener("click",e=>{if(openDim&&!e.composedPath().includes($("filters")))setOpen("")});
