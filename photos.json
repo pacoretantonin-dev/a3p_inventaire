@@ -32,7 +32,8 @@
    "Localisation > France > Bourgogne-Franche-Comté > 89_Yonne",
    "Localisation > France > Bretagne > 22_Côtes-d'Armor",
    "Localisation > France > Normandie > 61_Orne",
-   "Commerce"
+   "Commerce",
+   "Commerce > Boulangerie-Patisserie"
   ],
   "typologies": [
    "Habitat",
