@@ -61,7 +61,8 @@
    "Agriculture > Serre",
    "Agriculture > Champ",
    "Agriculture > Habitation",
-   "Agriculture > Stockage"
+   "Agriculture > Stockage",
+   "Agriculture > Technique"
   ],
   "typologies": [
    "Habitat",
