@@ -8,7 +8,8 @@
    "Paysage > Rural",
    "Paysage > Urbain",
    "Cadrage > Ensemble",
-   "Cadrage > Frontal"
+   "Cadrage > Frontal",
+   "Cadrage > Angle"
   ],
   "typologies": [
    "Habitat",
