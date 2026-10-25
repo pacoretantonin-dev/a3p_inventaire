@@ -65,7 +65,8 @@
    "Éléments > Véhicule",
    "Énergie",
    "Énergie > Eau",
-   "Énergie > Électricité"
+   "Énergie > Électricité",
+   "Énergie > Carburant"
   ],
   "typologies": [
    "Habitat",
