@@ -11,7 +11,8 @@
    "Cadrage > Frontal",
    "Cadrage > Angle",
    "Cadrage > Détail",
-   "Cadrage > Intérieur"
+   "Cadrage > Intérieur",
+   "Localisation"
   ],
   "typologies": [
    "Habitat",
