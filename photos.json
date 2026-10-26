@@ -205,8 +205,13 @@
   },
   {
    "file": "1792871137857-19.jpg",
-   "category": "",
-   "date": "2026-10-24T19:45:39.800Z"
+   "date": "2026-10-24T19:45:39.800Z",
+   "categories": [
+    "Localisation > France > Nouvelle Aquitaine > 33_Gironde",
+    "Énergie > Eau",
+    "Année > 2026"
+   ],
+   "note": ""
   },
   {
    "file": "1792871140874-20.jpg",
