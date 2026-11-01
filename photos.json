@@ -128,8 +128,13 @@
   },
   {
    "file": "1792871101426-5.jpg",
-   "category": "",
-   "date": "2026-10-24T19:45:03.999Z"
+   "date": "2026-10-24T19:45:03.999Z",
+   "categories": [
+    "Cadrage > Frontal",
+    "Localisation > France > Bourgogne-Franche-Comté > 71_Saône-et-Loire",
+    "Commerce"
+   ],
+   "note": ""
   },
   {
    "file": "1792871104120-6.jpg",
