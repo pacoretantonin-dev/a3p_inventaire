@@ -101,8 +101,15 @@
  "photos": [
   {
    "file": "1792871092291-1.jpg",
-   "category": "",
-   "date": "2026-10-24T19:44:54.659Z"
+   "date": "2026-10-24T19:44:54.659Z",
+   "categories": [
+    "Cadrage > Ensemble",
+    "Paysage > Rural",
+    "Localisation > France > Bourgogne-Franche-Comté > 71_Saône-et-Loire",
+    "Culte > Catholique > Église",
+    "Année > 2026"
+   ],
+   "note": ""
   },
   {
    "file": "1792871094777-2.jpg",
