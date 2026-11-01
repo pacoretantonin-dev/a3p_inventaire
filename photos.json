@@ -1029,8 +1029,14 @@
   },
   {
    "file": "1792875123855-20.jpg",
-   "category": "",
-   "date": "2026-10-24T20:52:05.852Z"
+   "date": "2026-10-24T20:52:05.852Z",
+   "categories": [
+    "Cadrage > Ensemble",
+    "Localisation > France > Nouvelle Aquitaine > 64_Pyrénées-Atlantiques",
+    "Habitat > Individuel",
+    "Année > 2026"
+   ],
+   "note": ""
   },
   {
    "file": "1792875126950-21.jpg",
