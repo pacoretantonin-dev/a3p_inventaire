@@ -129,6 +129,48 @@ textarea{width:100%;padding:8px;border:1px solid #000;border-radius:0;background
 .rz{position:absolute;right:-10px;bottom:-10px;width:12px;height:12px;background:#fff;border:1px solid #000;cursor:ew-resize;touch-action:none}
 .car{width:20px;flex:none;text-align:left;font-size:11px;color:var(--g)}
 .opt.has::after{content:" •"}
+#info{display:none;padding:12px 24px 60px;max-width:1000px}
+#site.info #info{display:block}
+#site.info #filters,#site.info main,#site.info #count{display:none}
+.isec{display:grid;grid-template-columns:180px 1fr;gap:16px 30px;padding:28px 0;border-top:1px solid #000}
+.isec h2{margin:0;font-size:15px;font-weight:700}
+.about{margin:0;white-space:pre-wrap;font-size:17px;line-height:1.55;max-width:640px}
+.clist{list-style:none;margin:0;padding:0}.clist li{display:flex;gap:24px;padding:4px 0}.clist li>span:first-child{width:110px;flex:none;color:var(--g)}
+.work{padding:0 0 22px}.wh span{color:var(--g);margin-left:10px}.work p{margin:6px 0;white-space:pre-wrap;max-width:640px}.work a,.clist a{text-decoration:underline}
+.irow{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;margin-bottom:12px}
+.irow.w{grid-template-columns:2fr 1fr 2fr}.irow.w textarea{grid-column:1/-1}.irow.w .mv{grid-column:1/-1;display:flex;gap:16px}
+#info button{font-size:13px;color:var(--g);text-decoration:underline}
+#info button.b{color:#000;font-size:14px;text-decoration:none;border:1px solid #000;padding:6px 14px}
+@media(max-width:760px){.isec{grid-template-columns:1fr}.irow,.irow.w{grid-template-columns:1fr}}
+/* style proche de matthieupetiard.com : texte seul, sans barres, majuscules et italiques discrets */
+body{font-size:13px;letter-spacing:.01em}
+header{padding:24px 24px 6px;align-items:baseline}
+#logo{font-size:13px;font-weight:400;text-transform:uppercase;letter-spacing:.03em;text-align:left}
+#logo b{font-weight:700;letter-spacing:.03em}
+.meta,.meta button,#count{font-size:12px}
+.bar{border:0;padding:8px 0 0;gap:4px 30px}
+.dim{font-size:13px;font-weight:400;gap:0;align-items:baseline}
+.dim.open,.dim:hover{font-weight:700}
+.dim .ar{transform:none!important;margin-right:7px;font-size:13px}
+.dim .ar::before{content:"->"}
+.dim.open .ar::before{content:"↓"}
+.fp .list{padding:12px 0 4px}
+.opt{font-size:13px}
+.chosen{padding:10px 0 0}
+.chip{border:0;padding:0;font-size:12px;font-style:italic;text-transform:uppercase;letter-spacing:.03em}
+.chip button{color:var(--g);font-size:13px;font-style:normal}
+.clr{font-size:12px;font-style:italic}
+#grid{gap:64px 32px}
+#pickbar{border-top:0;box-shadow:0 -1px 0 var(--l)}
+.isec{border:0;padding:22px 0}
+.isec h2{font-size:12px;font-weight:400;font-style:italic}
+.about{font-size:14px;line-height:1.6}
+.clist li,.clist a{font-size:13px}.clist li>span:first-child{font-style:italic}
+.wh b{font-weight:400;font-size:13px;text-transform:uppercase;letter-spacing:.03em}
+.wh span{font-style:italic;margin-left:12px}
+.work p{font-size:13px;font-style:italic}
+footer{font-family:var(--sans);font-size:12px;padding-top:56px}
+footer span:last-child{margin-left:auto}
 </style>
 </head>
 <body>
@@ -139,9 +181,10 @@ textarea{width:100%;padding:8px;border:1px solid #000;border-radius:0;background
 <div id="itools" hidden><button id="addT">+ texte</button><button id="sBtn">style</button><span>clique sur un texte pour régler police, alignement et largeur · glisser pour déplacer · flèches pour affiner · double-clic pour modifier ou supprimer · clic sur I3P pour entrer</span></div>
 </section>
 <div id="site">
-<header><button id="logo">I3P</button><div class="meta"><span id="count"></span><button id="vu" class="on">Grille</button><button id="vf">Libre</button></div></header>
+<header><button id="logo"><b>I3P</b> inventaire photographique</button><div class="meta"><span id="count"></span><button id="vu" class="on">Grille</button><button id="vf">Libre</button><button id="vi">Info</button></div></header>
 <nav id="filters"></nav>
 <main><div id="grid"></div><p id="empty" hidden></p></main>
+<section id="info" aria-label="Informations"></section>
 <footer id="foot"></footer>
 </div>
 
@@ -207,16 +250,16 @@ $("vf").onclick=()=>{$("grid").className="free";document.documentElement.classLi
 
 function render(){
   {const ok=new Set(tree().map(n=>n.path));sel.category=sel.category.filter(x=>ok.has(x))}
-  $("filters").innerHTML=`<div class="bar">${DIMS.map(([d,l])=>`<button class="dim ${openDim===d?"open":""}" data-tog="${d}" aria-expanded="${openDim===d}">${l}${sel[d].length?` (${sel[d].length})`:""}<span class="ar">▾</span></button>`).join("")}</div>`
+  $("filters").innerHTML=`<div class="bar">${DIMS.map(([d,l])=>`<button class="dim ${openDim===d?"open":""}" data-tog="${d}" aria-expanded="${openDim===d}"><span class="ar"></span>${l}${sel[d].length?` (${sel[d].length})`:""}</button>`).join("")}</div>`
    +DIMS.map(([d,l,k])=>`<div class="fp ${openDim===d?"open":""}" data-d="${d}"><div class="in"><div class="list">${nodesHtml(d)||'<span style="color:var(--g)">Aucune valeur</span>'}${cfg?'<button class="opt add" data-newcat="1">+ Nouvelle catégorie</button>':""}</div></div></div>`).join("")
    +(()=>{const ch=DIMS.flatMap(([d])=>sel[d].map(v=>[d,v]));return ch.length?`<div class="chosen">${ch.map(([d,v])=>`<span class="chip">${esc(label(v))}<button data-rm="${d}" data-val="${esc(v)}" aria-label="Retirer ${esc(v)}">×</button></span>`).join("")}<button class="clr" data-clear="1">Tout effacer</button></div>`:""})();
   const all=sorted(),list=shown();
   $("count").textContent=all.length?`${list.length} / ${all.length}`:"";
   $("grid").innerHTML=list.map(p=>`<button class="card" data-f="${esc(p.file)}"><div class="fr"><img loading="lazy" src="${esc(src(p))}" alt="" onerror="this.closest('.card').style.display='none'"></div></button>`).join("");
-  renderIntro();updPick();
+  renderIntro();updPick();if(!editInfo)renderInfo();
   const e=$("empty");e.hidden=!!list.length;e.textContent=all.length?"Aucune photo ne correspond à ces filtres.":"L'archive est vide.";
   $("foot").innerHTML=cfg?`<button id="fA">Ajouter des photos</button><button id="fC">Catégories</button><button id="fS">Sélectionner pour supprimer</button><button id="fX">Déconnexion</button>`:`<button id="fL">Administration</button>`;
-  $("foot").insertAdjacentHTML("beforeend",'<span style="margin-left:auto">version 18</span>');
+  $("foot").insertAdjacentHTML("afterbegin",`<span>© ${new Date().getFullYear()} I3P</span>`);$("foot").insertAdjacentHTML("beforeend",'<span style="margin-left:auto">version 20</span>');
 }
 async function newCat(parent=""){const nm=clean(prompt(parent?"Nom de la sous-catégorie de « "+label(parent)+" » :":"Nom de la nouvelle catégorie :")||"");if(!nm)return;const path=parent?parent+SEP+nm:nm;if(parent)exp.add(parent);try{await commit(j=>addPath(j,path),parent?"Sous-catégorie":"Catégorie");say(parent?"Sous-catégorie ajoutée":"Catégorie ajoutée")}catch(e){fail(e)}}
 function setOpen(d){openDim=d;document.querySelectorAll("#filters .dim").forEach(b=>{b.classList.toggle("open",b.dataset.tog===d);b.setAttribute("aria-expanded",b.dataset.tog===d)});document.querySelectorAll("#filters .fp").forEach(f=>f.classList.toggle("open",f.dataset.d===d))}
@@ -367,6 +410,45 @@ $("pickSet").onclick=async()=>{const files=[...picked],c=$("pickCat").value;if(!
   try{await commit(j=>{j.photos.forEach(p=>{if(files.includes(p.file)){const c0=cats(p);if(!c0.includes(c))p.categories=[...c0,c];delete p.category}})},"Classement");endPick();say("Ajouté à « "+label(c)+" »")}catch(e){fail(e)}};
 $("pickDel").onclick=async()=>{const files=[...picked];if(!files.length||!confirm("Supprimer définitivement "+files.length+" photo(s) ?"))return;say("Suppression…",0);
   try{await commit(j=>{j.photos=j.photos.filter(x=>!files.includes(x.file))},"Suppression de "+files.length+" photo(s)");for(const f of files){try{await delFile(f)}catch(e){}}endPick();say("Supprimé")}catch(e){fail(e)}};
+
+/* page Info */
+let editInfo=false,draftInfo=null;const INFO_ABOUT=DEF.text;
+const safeU=u=>/^(https?:\/\/|mailto:)/i.test(u||"")?u:"";
+const linkOf=c=>safeU(c.url)||(/^https?:\/\//i.test(c.value||"")?c.value:(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c.value||"")?"mailto:"+c.value:""));
+const curInfo=()=>{const i={about:INFO_ABOUT,contacts:[],works:[],...(data.info||{})};i.contacts=i.contacts||[];i.works=i.works||[];return i};
+function renderInfo(){const el=$("info"),inf=curInfo();
+  if(editInfo&&cfg){const d=draftInfo;
+    el.innerHTML=`<div class="ipage"><div class="isec"><h2>Le projet</h2><textarea id="iA" rows="10">${esc(d.about)}</textarea></div>
+<div class="isec"><h2>Contact</h2><div>${d.contacts.map((c,i)=>`<div class="irow" data-c="${i}"><input data-f="label" placeholder="Nom (Mail, Instagram…)" value="${esc(c.label)}"><input data-f="value" placeholder="Texte affiché" value="${esc(c.value)}"><input data-f="url" placeholder="Lien (facultatif)" value="${esc(c.url)}"><button data-rc="${i}" aria-label="Retirer ce contact">×</button></div>`).join("")}<button data-ac="1">+ contact</button></div></div>
+<div class="isec"><h2>Travaux</h2><div>${d.works.map((w,i)=>`<div class="irow w" data-w="${i}"><input data-f="title" placeholder="Titre" value="${esc(w.title)}"><input data-f="year" placeholder="Année" value="${esc(w.year)}"><input data-f="link" placeholder="Lien (facultatif)" value="${esc(w.link)}"><textarea data-f="text" rows="3" placeholder="Description">${esc(w.text)}</textarea><span class="mv"><button data-up="${i}">monter</button><button data-dn="${i}">descendre</button><button data-rw="${i}">supprimer</button></span></div>`).join("")}<button data-aw="1">+ travail</button></div></div>
+<div class="foot" style="justify-content:flex-start"><button class="b" id="iOk">Enregistrer</button><button id="iNo">Annuler</button></div></div>`;return}
+  const has=inf.about.trim()||inf.contacts.length||inf.works.length;
+  el.innerHTML=`<div class="ipage">`+(inf.about.trim()?`<div class="isec"><h2>Le projet</h2><p class="about">${esc(inf.about)}</p></div>`:"")
+   +(inf.contacts.length?`<div class="isec"><h2>Contact</h2><ul class="clist">${inf.contacts.map(c=>{const u=linkOf(c),t=esc(c.value||c.label);return`<li><span>${esc(c.label)}</span>${u?`<a href="${esc(u)}"${/^https?:/i.test(u)?' target="_blank" rel="noopener"':""}>${t}</a>`:`<span>${t}</span>`}</li>`}).join("")}</ul></div>`:"")
+   +(inf.works.length?`<div class="isec"><h2>Travaux</h2><div>${inf.works.map(w=>{const u=safeU(w.link);return`<div class="work"><div class="wh"><b>${esc(w.title)}</b>${w.year?`<span>${esc(w.year)}</span>`:""}</div>${w.text?`<p>${esc(w.text)}</p>`:""}${u?`<a href="${esc(u)}" target="_blank" rel="noopener">Voir</a>`:""}</div>`}).join("")}</div></div>`:"")
+   +(has?"":'<p style="color:var(--g)">Page en cours de rédaction.</p>')+(cfg?'<div class="foot" style="justify-content:flex-start"><button class="b" id="iEdit">Modifier cette page</button></div>':"")+`</div>`}
+function readInfo(){const el=$("info"),g=(r,f)=>r.querySelector(`[data-f=${f}]`).value.trim();
+  return{about:el.querySelector("#iA").value,contacts:[...el.querySelectorAll("[data-c]")].map(r=>({label:g(r,"label"),value:g(r,"value"),url:g(r,"url")})),works:[...el.querySelectorAll("[data-w]")].map(r=>({title:g(r,"title"),year:g(r,"year"),link:g(r,"link"),text:g(r,"text")}))}}
+$("info").onclick=async e=>{const b=e.target.closest("button");if(!b)return;const d=b.dataset;
+  if(b.id==="iEdit"){draftInfo=JSON.parse(JSON.stringify(curInfo()));editInfo=true;renderInfo();return}
+  if(b.id==="iNo"){editInfo=false;renderInfo();return}
+  if(!editInfo)return;
+  if(b.id==="iOk"){const inf=readInfo();inf.contacts=inf.contacts.filter(c=>c.label||c.value);inf.works=inf.works.filter(w=>w.title||w.text);
+    try{await commit(j=>{j.info=inf},"Page info");editInfo=false;renderInfo();say("Enregistré. En ligne pour les visiteurs dans environ une minute.",6000)}catch(err){fail(err)}return}
+  const inf=readInfo();
+  if(d.ac)inf.contacts.push({label:"",value:"",url:""});
+  else if(d.rc!==undefined)inf.contacts.splice(+d.rc,1);
+  else if(d.aw)inf.works.push({title:"",year:"",link:"",text:""});
+  else if(d.rw!==undefined)inf.works.splice(+d.rw,1);
+  else if(d.up!==undefined){const i=+d.up;if(i>0)[inf.works[i-1],inf.works[i]]=[inf.works[i],inf.works[i-1]]}
+  else if(d.dn!==undefined){const i=+d.dn;if(i<inf.works.length-1)[inf.works[i+1],inf.works[i]]=[inf.works[i],inf.works[i+1]]}
+  else return;
+  draftInfo=inf;renderInfo()};
+function showInfo(on){$("site").classList.toggle("info",on);$("vi").className=on?"on":"";if(on){$("vu").className="";$("vf").className="";renderInfo();if(location.hash!=="#info")history.replaceState(null,"","#info")}else if(location.hash==="#info")history.replaceState(null,"",location.pathname+location.search)}
+$("vi").onclick=()=>showInfo(true);
+{const vu0=$("vu").onclick,vf0=$("vf").onclick;$("vu").onclick=()=>{showInfo(false);vu0()};$("vf").onclick=()=>{showInfo(false);vf0()}}
+addEventListener("hashchange",()=>showInfo(location.hash==="#info"));
+if(location.hash==="#info")showInfo(true);
 
 fetch("photos.json?t="+Date.now()).then(r=>r.json()).then(j=>{data=j}).catch(()=>{}).finally(()=>{render();adminSync()});
 render();
