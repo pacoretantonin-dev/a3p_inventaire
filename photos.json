@@ -1480,12 +1480,12 @@
   "contacts": [
    {
     "label": "tel.",
-    "value": "",
-    "url": "+33649267952"
+    "value": "+33649267952",
+    "url": ""
    },
    {
     "label": "insta.",
-    "value": "",
+    "value": "a5.pac0ret",
     "url": "https://www.instagram.com/a5.pac0ret/"
    }
   ],
