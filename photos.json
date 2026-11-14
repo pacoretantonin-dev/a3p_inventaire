@@ -1477,7 +1477,18 @@
  },
  "info": {
   "about": "I3P est un inventaire photographique constitué au fil des voyages et des découvertes. Les images y sont collectées et classées selon leurs typologies, formes, points de vue ou lieux, pour composer une bibliothèque ouverte du paysage et de l’architecture ordinaire, loin des images lisses et idéalisées. Un regard sur le réel, ses imperfections et la richesse des territoires habités.",
-  "contacts": [],
+  "contacts": [
+   {
+    "label": "tel.",
+    "value": "",
+    "url": "+33649267952"
+   },
+   {
+    "label": "insta.",
+    "value": "",
+    "url": "https://www.instagram.com/a5.pac0ret/"
+   }
+  ],
   "works": []
  }
 }
