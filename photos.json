@@ -1654,7 +1654,8 @@
     "x": 61.72,
     "y": 56,
     "w": 28,
-    "align": "left"
+    "align": "left",
+    "font": "mono"
    }
   ],
   "style": {
