@@ -24,6 +24,7 @@ button{background:none;border:0;padding:0;cursor:pointer}
 #itools button{color:#fff;background:none;border:1px solid #666;padding:3px 10px;cursor:pointer;margin-right:10px}
 @media(max-width:700px){#itools span{display:none}}
 #intro.out{opacity:0;pointer-events:none}
+#intro.wait{opacity:0;background:#fff!important;transition:none}
 #site{opacity:0;transition:opacity .7s ease}
 #site.in{opacity:1}
 header{display:flex;justify-content:space-between;align-items:baseline;padding:18px 24px;gap:16px;flex-wrap:wrap}
@@ -196,7 +197,7 @@ header{align-items:center;padding-top:20px}
 </style>
 </head>
 <body>
-<section id="intro" aria-label="Page d'accueil">
+<section id="intro" class="wait" aria-label="Page d'accueil">
 <h1 id="bigLogo"><button id="enter" aria-label="Entrer dans le site">I3P</button></h1>
 <div id="itexts"></div>
 <div id="ttools" hidden><select id="tF" aria-label="Police"></select><span><button data-al="left">Gauche</button> <button data-al="center">Centré</button> <button data-al="right">Droite</button> <button data-al="justify">Justifié</button></span><label>Largeur <input type="range" id="tW" min="8" max="95"></label><button id="tDel">Supprimer</button></div>
@@ -306,7 +307,7 @@ function render(){
   renderIntro();updPick();if(!editInfo)renderInfo();
   const e=$("empty");e.hidden=inView||!!list.length;e.textContent=all.length?"Aucune photo ne correspond à ces filtres.":"L'archive est vide.";
   $("foot").innerHTML=cfg?`<button id="fA">Ajouter des photos</button><button id="fC">Classements</button><button id="fLogo">Logo</button><button id="fS">Sélectionner pour supprimer</button><button id="fX">Déconnexion</button>`:`<button id="fL">Administration</button>`;
-  $("foot").insertAdjacentHTML("afterbegin",`<span>© ${new Date().getFullYear()} I3P</span>`);$("foot").insertAdjacentHTML("beforeend",'<span style="margin-left:auto">version 23</span>');
+  $("foot").insertAdjacentHTML("afterbegin",`<span>© ${new Date().getFullYear()} I3P</span>`);$("foot").insertAdjacentHTML("beforeend",'<span style="margin-left:auto">version 24</span>');
 }
 async function newCat(parent="",k="categories"){const L=DIMS.find(x=>x[0]===k)[1].toLowerCase(),nm=clean(prompt(parent?"Nom de la sous-"+L+" de « "+label(parent)+" » :":"Nom de la nouvelle "+L+" :")||"");if(!nm)return;const path=parent?parent+SEP+nm:nm;if(parent)exp[k].add(parent);try{await commit(j=>addPath(j,path,k),parent?"Sous-élément":"Nouvel élément");say(parent?"Sous-"+L+" ajoutée":"Ajouté")}catch(e){fail(e)}}
 function setOpen(d){openDim=d;document.querySelectorAll("#filters .dim").forEach(b=>{b.classList.toggle("open",b.dataset.tog===d);b.setAttribute("aria-expanded",b.dataset.tog===d)});document.querySelectorAll("#filters .fp").forEach(f=>f.classList.toggle("open",f.dataset.d===d))}
@@ -521,8 +522,10 @@ $("vi").onclick=()=>showInfo(true);
 addEventListener("hashchange",()=>showInfo(location.hash==="#info"));
 if(location.hash==="#info")showInfo(true);
 
-fetch("photos.json?t="+Date.now()).then(r=>r.json()).then(j=>{data=j}).catch(()=>{}).finally(()=>{render();adminSync()});
-render();
+fetch("photos.json?t="+Date.now()).then(r=>r.json()).then(j=>{data=j}).catch(()=>{}).finally(()=>{render();adminSync();
+  const reveal=()=>{if(reveal.d)return;reveal.d=1;$("intro").classList.remove("wait")},f=data.intro?.style?.bgFile;
+  if(f&&f!=="pending"){const im=new Image();im.onload=im.onerror=reveal;im.src="bg/"+encodeURIComponent(f);setTimeout(reveal,2500)}else reveal()});
+render();setTimeout(()=>$("intro").classList.remove("wait"),4000);
 </script>
 </body>
 </html>
