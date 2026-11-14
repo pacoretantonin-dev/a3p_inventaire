@@ -171,6 +171,11 @@ header{padding:24px 24px 6px;align-items:baseline}
 .work p{font-size:13px;font-style:italic}
 footer{font-family:var(--sans);font-size:12px;padding-top:56px}
 footer span:last-child{margin-left:auto}
+#logo{font-weight:700;text-transform:none;letter-spacing:-.04em;line-height:1;font-size:56px;color:#000}
+header{align-items:center;padding-top:20px}
+.meta button,.meta span{font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+#grid{gap:48px 24px}
+.mh{margin:18px 0 6px;font-size:12px;font-weight:400;font-style:italic}
 </style>
 </head>
 <body>
@@ -181,7 +186,7 @@ footer span:last-child{margin-left:auto}
 <div id="itools" hidden><button id="addT">+ texte</button><button id="sBtn">style</button><span>clique sur un texte pour régler police, alignement et largeur · glisser pour déplacer · flèches pour affiner · double-clic pour modifier ou supprimer · clic sur I3P pour entrer</span></div>
 </section>
 <div id="site">
-<header><button id="logo"><b>I3P</b> inventaire photographique</button><div class="meta"><span id="count"></span><button id="vu" class="on">Grille</button><button id="vf">Libre</button><button id="vi">Info</button></div></header>
+<header><button id="logo">I3P</button><div class="meta"><span id="count"></span><button id="vu" class="on">Grille</button><button id="vf">Libre</button><button id="vi">Info</button></div></header>
 <nav id="filters"></nav>
 <main><div id="grid"></div><p id="empty" hidden></p></main>
 <section id="info" aria-label="Informations"></section>
@@ -215,11 +220,12 @@ footer span:last-child{margin-left:auto}
 <input type="file" id="bgIn" accept="image/*" hidden>
 <input type="file" id="fileIn" accept="image/*" multiple hidden>
 <div id="pickbar" hidden><span id="pickN"></span><select id="pickCat" style="width:auto"></select><button id="pickSet" class="b">Ajouter</button><button id="pickDel" class="b d">Supprimer</button><button id="pickNo">Annuler</button></div>
+<div class="ov" id="lgoOv"><div class="box"><h2>Logo du site</h2><label>Texte</label><input id="lText"><label>Couleur</label><input type="color" id="lColor"><label>Taille</label><input type="range" id="lSize" min="24" max="140" step="2"><div class="foot"><button id="lNo">Annuler</button><button class="b" id="lOk">Enregistrer</button></div></div></div>
 <div id="st"></div>
 
 <script>
-const DIMS=[["category","Catégorie","categories"]];
-let data={taxonomy:{categories:[],typologies:[],views:[]},photos:[]},sel={category:[]},openDim="",cur=-1,pending=[],cfg=null,local={};
+const DIMS=[["categories","Catégorie","categories"],["series","Série","series"],["commandes","Commande","commandes"]];
+let data={taxonomy:{categories:[],typologies:[],views:[]},photos:[]},sel={categories:[],series:[],commandes:[]},openDim="",cur=-1,pending=[],cfg=null,local={};
 const $=id=>document.getElementById(id),LS="i3p-gh";
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const say=(t,ms=3000)=>{const s=$("st");s.textContent=t;s.style.display="block";if(ms)setTimeout(()=>s.style.display="none",ms)};
@@ -229,17 +235,18 @@ const numOf=(all,p)=>String(all.indexOf(p)+1).padStart(4,"0");
 const src=p=>local[p.file]||"photos/"+encodeURIComponent(p.file);
 const vals=(d,k)=>{const s=new Set(data.taxonomy[k]||[]);data.photos.forEach(p=>p[d]&&s.add(p[d]));return[...s]};
 const SEP=" > ",clean=x=>x.split(">").map(y=>y.trim()).filter(Boolean).join(SEP),label=x=>x.split(SEP).join(" › ");
-const cats=p=>Array.isArray(p.categories)?p.categories:(p.category?[p.category]:[]);
-const inCat=(p,x)=>cats(p).some(c=>c===x||c.startsWith(x+SEP));
+const cats=(p,k="categories")=>k==="categories"?(Array.isArray(p.categories)?p.categories:(p.category?[p.category]:[])):(Array.isArray(p[k])?p[k]:[]);
+const setCats=(p,k,a)=>{p[k]=a;if(k==="categories")delete p.category};
+const inCat=(p,x,k)=>cats(p,k).some(c=>c===x||c.startsWith(x+SEP));
 const rnd=new Map(),rk=f=>{if(!rnd.has(f))rnd.set(f,Math.random());return rnd.get(f)};
-const shown=()=>{const l=sorted().filter(p=>!sel.category.length||sel.category.some(x=>inCat(p,x)));if(!sel.category.length)l.sort((a,b)=>rk(a.file)-rk(b.file));return l};
-function tree(){const kids=new Map([["",[]]]),seen=new Set(),add=q=>{const a=q.split(SEP);for(let i=1;i<=a.length;i++){const path=a.slice(0,i).join(SEP);if(seen.has(path))continue;seen.add(path);kids.get(a.slice(0,i-1).join(SEP)).push(path);kids.set(path,[])}};
-  (data.taxonomy.categories||[]).forEach(add);data.photos.forEach(p=>cats(p).forEach(add));const out=[],walk=(par,d)=>kids.get(par).forEach(path=>{out.push({path,name:path.split(SEP).pop(),depth:d});walk(path,d+1)});walk("",0);return out}
-const exp=new Set();
-function nodesHtml(d){const T=tree(),par=new Set(T.map(n=>n.path.split(SEP).slice(0,-1).join(SEP)).filter(Boolean));
-  return T.filter(n=>{const a=n.path.split(SEP);for(let i=1;i<a.length;i++)if(!exp.has(a.slice(0,i).join(SEP)))return false;return true}).map(n=>{const kids=par.has(n.path),on=sel[d].includes(n.path),has=sel[d].some(x=>x.startsWith(n.path+SEP));
-    return `<div class="node" style="margin-left:${n.depth*24}px">${kids?`<button class="car" data-exp="${esc(n.path)}" aria-expanded="${exp.has(n.path)}" aria-label="Déplier ${esc(n.name)}">${exp.has(n.path)?"▾":"▸"}</button>`:'<span class="car"></span>'}<button class="opt ${on?"on":""}${has?" has":""}" data-d="${d}" data-v="${esc(n.path)}">${esc(n.name)}</button>${cfg?`<button class="sub" data-addsub="${esc(n.path)}">+ sous-catégorie</button>`:""}</div>`}).join("")}
-const addPath=(j,path)=>{const a=j.taxonomy.categories=j.taxonomy.categories||[];if(!a.includes(path))a.push(path)};
+const shown=()=>{const none=DIMS.every(([k])=>!sel[k].length),l=sorted().filter(p=>DIMS.every(([k])=>!sel[k].length||sel[k].some(x=>inCat(p,x,k))));if(none)l.sort((a,b)=>rk(a.file)-rk(b.file));return l};
+function tree(k="categories"){const kids=new Map([["",[]]]),seen=new Set(),add=q=>{const a=q.split(SEP);for(let i=1;i<=a.length;i++){const path=a.slice(0,i).join(SEP);if(seen.has(path))continue;seen.add(path);kids.get(a.slice(0,i-1).join(SEP)).push(path);kids.set(path,[])}};
+  (data.taxonomy[k]||[]).forEach(add);data.photos.forEach(p=>cats(p,k).forEach(add));const out=[],walk=(par,d)=>kids.get(par).forEach(path=>{out.push({path,name:path.split(SEP).pop(),depth:d});walk(path,d+1)});walk("",0);return out}
+const exp={categories:new Set(),series:new Set(),commandes:new Set()};
+function nodesHtml(d){const T=tree(d),E=exp[d],L=DIMS.find(x=>x[0]===d)[1].toLowerCase(),par=new Set(T.map(n=>n.path.split(SEP).slice(0,-1).join(SEP)).filter(Boolean));
+  return T.filter(n=>{const a=n.path.split(SEP);for(let i=1;i<a.length;i++)if(!E.has(a.slice(0,i).join(SEP)))return false;return true}).map(n=>{const kids=par.has(n.path),on=sel[d].includes(n.path),has=sel[d].some(x=>x.startsWith(n.path+SEP));
+    return `<div class="node" style="margin-left:${n.depth*24}px">${kids?`<button class="car" data-d="${d}" data-exp="${esc(n.path)}" aria-expanded="${E.has(n.path)}" aria-label="Déplier ${esc(n.name)}">${E.has(n.path)?"▾":"▸"}</button>`:'<span class="car"></span>'}<button class="opt ${on?"on":""}${has?" has":""}" data-d="${d}" data-v="${esc(n.path)}">${esc(n.name)}</button>${cfg?`<button class="sub" data-d="${d}" data-addsub="${esc(n.path)}">+ sous-${L}</button>`:""}</div>`}).join("")}
+const addPath=(j,path,k="categories")=>{const a=j.taxonomy[k]=j.taxonomy[k]||[];if(!a.includes(path))a.push(path)};
 
 /* intro */
 const enter=()=>{$("intro").classList.add("out");$("site").classList.add("in");scrollTo(0,0)};
@@ -249,27 +256,28 @@ $("vu").onclick=()=>{$("grid").className="";document.documentElement.classList.r
 $("vf").onclick=()=>{$("grid").className="free";document.documentElement.classList.add("free");$("vf").className="on";$("vu").className=""};
 
 function render(){
-  {const ok=new Set(tree().map(n=>n.path));sel.category=sel.category.filter(x=>ok.has(x))}
+  DIMS.forEach(([k])=>{const ok=new Set(tree(k).map(n=>n.path));sel[k]=sel[k].filter(x=>ok.has(x))});
+  applyLogo(siteSt());
   $("filters").innerHTML=`<div class="bar">${DIMS.map(([d,l])=>`<button class="dim ${openDim===d?"open":""}" data-tog="${d}" aria-expanded="${openDim===d}"><span class="ar"></span>${l}${sel[d].length?` (${sel[d].length})`:""}</button>`).join("")}</div>`
-   +DIMS.map(([d,l,k])=>`<div class="fp ${openDim===d?"open":""}" data-d="${d}"><div class="in"><div class="list">${nodesHtml(d)||'<span style="color:var(--g)">Aucune valeur</span>'}${cfg?'<button class="opt add" data-newcat="1">+ Nouvelle catégorie</button>':""}</div></div></div>`).join("")
+   +DIMS.map(([d,l,k])=>`<div class="fp ${openDim===d?"open":""}" data-d="${d}"><div class="in"><div class="list">${nodesHtml(d)||'<span style="color:var(--g)">Aucune valeur</span>'}${cfg?`<button class="opt add" data-newcat="${d}">+ Nouvelle ${l.toLowerCase()}</button>`:""}</div></div></div>`).join("")
    +(()=>{const ch=DIMS.flatMap(([d])=>sel[d].map(v=>[d,v]));return ch.length?`<div class="chosen">${ch.map(([d,v])=>`<span class="chip">${esc(label(v))}<button data-rm="${d}" data-val="${esc(v)}" aria-label="Retirer ${esc(v)}">×</button></span>`).join("")}<button class="clr" data-clear="1">Tout effacer</button></div>`:""})();
   const all=sorted(),list=shown();
   $("count").textContent=all.length?`${list.length} / ${all.length}`:"";
   $("grid").innerHTML=list.map(p=>`<button class="card" data-f="${esc(p.file)}"><div class="fr"><img loading="lazy" src="${esc(src(p))}" alt="" onerror="this.closest('.card').style.display='none'"></div></button>`).join("");
   renderIntro();updPick();if(!editInfo)renderInfo();
   const e=$("empty");e.hidden=!!list.length;e.textContent=all.length?"Aucune photo ne correspond à ces filtres.":"L'archive est vide.";
-  $("foot").innerHTML=cfg?`<button id="fA">Ajouter des photos</button><button id="fC">Catégories</button><button id="fS">Sélectionner pour supprimer</button><button id="fX">Déconnexion</button>`:`<button id="fL">Administration</button>`;
-  $("foot").insertAdjacentHTML("afterbegin",`<span>© ${new Date().getFullYear()} I3P</span>`);$("foot").insertAdjacentHTML("beforeend",'<span style="margin-left:auto">version 20</span>');
+  $("foot").innerHTML=cfg?`<button id="fA">Ajouter des photos</button><button id="fC">Classements</button><button id="fLogo">Logo</button><button id="fS">Sélectionner pour supprimer</button><button id="fX">Déconnexion</button>`:`<button id="fL">Administration</button>`;
+  $("foot").insertAdjacentHTML("afterbegin",`<span>© ${new Date().getFullYear()} I3P</span>`);$("foot").insertAdjacentHTML("beforeend",'<span style="margin-left:auto">version 21</span>');
 }
-async function newCat(parent=""){const nm=clean(prompt(parent?"Nom de la sous-catégorie de « "+label(parent)+" » :":"Nom de la nouvelle catégorie :")||"");if(!nm)return;const path=parent?parent+SEP+nm:nm;if(parent)exp.add(parent);try{await commit(j=>addPath(j,path),parent?"Sous-catégorie":"Catégorie");say(parent?"Sous-catégorie ajoutée":"Catégorie ajoutée")}catch(e){fail(e)}}
+async function newCat(parent="",k="categories"){const L=DIMS.find(x=>x[0]===k)[1].toLowerCase(),nm=clean(prompt(parent?"Nom de la sous-"+L+" de « "+label(parent)+" » :":"Nom de la nouvelle "+L+" :")||"");if(!nm)return;const path=parent?parent+SEP+nm:nm;if(parent)exp[k].add(parent);try{await commit(j=>addPath(j,path,k),parent?"Sous-élément":"Nouvel élément");say(parent?"Sous-"+L+" ajoutée":"Ajouté")}catch(e){fail(e)}}
 function setOpen(d){openDim=d;document.querySelectorAll("#filters .dim").forEach(b=>{b.classList.toggle("open",b.dataset.tog===d);b.setAttribute("aria-expanded",b.dataset.tog===d)});document.querySelectorAll("#filters .fp").forEach(f=>f.classList.toggle("open",f.dataset.d===d))}
 $("filters").onclick=e=>{const t=e.target.closest("button");if(!t)return;
-  if(t.dataset.newcat){newCat();return}
-  if(t.dataset.addsub!==undefined){newCat(t.dataset.addsub);return}
-  if(t.dataset.exp!==undefined){const v=t.dataset.exp;exp.has(v)?exp.delete(v):exp.add(v);render();return}
+  if(t.dataset.newcat){newCat("",t.dataset.newcat);return}
+  if(t.dataset.addsub!==undefined){newCat(t.dataset.addsub,t.dataset.d);return}
+  if(t.dataset.exp!==undefined){const v=t.dataset.exp,E=exp[t.dataset.d];E.has(v)?E.delete(v):E.add(v);render();return}
   if(t.dataset.tog){setOpen(openDim===t.dataset.tog?"":t.dataset.tog);return}
   if(t.dataset.v!==undefined){const a=sel[t.dataset.d],v=t.dataset.v,i=a.indexOf(v);
-    if(i>=0){a.splice(i,1);exp.delete(v)}else{sel[t.dataset.d]=a.filter(x=>!(x.startsWith(v+SEP)||v.startsWith(x+SEP)));sel[t.dataset.d].push(v);exp.add(v)}
+    if(i>=0){a.splice(i,1);exp[t.dataset.d].delete(v)}else{sel[t.dataset.d]=a.filter(x=>!(x.startsWith(v+SEP)||v.startsWith(x+SEP)));sel[t.dataset.d].push(v);exp[t.dataset.d].add(v)}
     render();return}
   if(t.dataset.rm!==undefined){const a=sel[t.dataset.rm];a.splice(a.indexOf(t.dataset.val),1);render();return}
   if(t.dataset.clear!==undefined){DIMS.forEach(([d])=>sel[d]=[]);render()}};
@@ -278,7 +286,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"&&openDim)setOpen("")
 $("foot").onclick=e=>{const i=e.target.id;
   if(i==="fL"){const m=location.hostname.match(/^(.+)\.github\.io$/);$("gO").value=cfg?.owner||(m?m[1]:"");$("gR").value=cfg?.repo||(m?(location.pathname.split("/")[1]||m[1]+".github.io"):"");$("lgOv").classList.add("open")}
   if(i==="fX"){cfg=null;try{localStorage.removeItem(LS)}catch(e){}render()}
-  if(i==="fS")startPick();if(i==="fA")$("fileIn").click();if(i==="fC"){man();$("mnOv").classList.add("open")}};
+  if(i==="fLogo")openLogo();if(i==="fS")startPick();if(i==="fA")$("fileIn").click();if(i==="fC"){man();$("mnOv").classList.add("open")}};
 
 /* GitHub */
 async function gh(path,o={}){const m=o.method||"GET";const r=await fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${path}`+(m==="GET"?`?ref=${cfg.branch}&t=${Date.now()}`:""),{method:m,headers:{Authorization:"Bearer "+cfg.token,Accept:"application/vnd.github+json"},body:o.body?JSON.stringify(o.body):undefined});
@@ -300,9 +308,9 @@ $("lgOk").onclick=async()=>{cfg={owner:$("gO").value.trim(),repo:$("gR").value.t
   catch(e){cfg=null;$("lgErr").textContent="Connexion impossible ("+e.message+"). Vérifie le compte, le dépôt et le jeton."}};
 
 /* formulaires */
-const selects=v=>DIMS.map(([d,l,k])=>{const o=tree();return`<label>${l}</label><select data-d="${d}" data-k="${k}"><option value="">—</option>${o.map(n=>`<option value="${esc(n.path)}" ${v[d]===n.path?"selected":""}>${"\u00a0\u00a0".repeat(n.depth)}${esc(n.name)}</option>`).join("")}<option value="__n">Nouvelle catégorie ou sous-catégorie…</option></select>`}).join("");
-const wire=r=>r.querySelectorAll("select").forEach(s=>s.onchange=async()=>{if(s.value!=="__n")return;const v=clean(prompt("Nom de la nouvelle catégorie (pour une sous-catégorie, écris : Parent > Sous-catégorie) :")||"");if(!v){s.value="";return}
-  try{await commit(j=>{addPath(j,v)},"Nouvelle valeur");const o=document.createElement("option");o.value=o.textContent=v;s.insertBefore(o,s.lastElementChild);s.value=v}catch(e){say("Erreur : "+e.message,5000);s.value=""}});
+const selects=v=>DIMS.map(([d,l,k])=>{const o=tree(k);return`<label>${l}</label><select data-d="${d}" data-k="${k}"><option value="">—</option>${o.map(n=>`<option value="${esc(n.path)}" ${v[d]===n.path?"selected":""}>${"\u00a0\u00a0".repeat(n.depth)}${esc(n.name)}</option>`).join("")}<option value="__n">Nouvelle valeur…</option></select>`}).join("");
+const wire=r=>r.querySelectorAll("select").forEach(s=>s.onchange=async()=>{if(s.value!=="__n")return;const v=clean(prompt("Nom de la nouvelle valeur (pour une sous-valeur, écris : Parent > Sous-valeur) :")||"");if(!v){s.value="";return}
+  try{await commit(j=>{addPath(j,v,s.dataset.k)},"Nouvelle valeur");const o=document.createElement("option");o.value=o.textContent=v;s.insertBefore(o,s.lastElementChild);s.value=v}catch(e){say("Erreur : "+e.message,5000);s.value=""}});
 const rd=r=>{const o={};r.querySelectorAll("select").forEach(s=>o[s.dataset.d]=s.value==="__n"?"":s.value);return o};
 
 /* import */
@@ -316,35 +324,36 @@ $("adOk").onclick=async()=>{const meta=rd($("adForm")),out=[];$("adOv").classLis
   for(const f of pending){say(`Import ${++n}/${pending.length}…`,0);
     try{const b=await resize(f),name=Date.now()+"-"+n+".jpg";local[name]=URL.createObjectURL(b);
       await gh("photos/"+name,{method:"PUT",body:{message:"Ajout "+name,content:await bb(b),branch:cfg.branch}});
-      out.push({file:name,categories:meta.category?[meta.category]:[],date:new Date().toISOString()})}catch(err){say("Échec : "+err.message,6000)}}
+      out.push({file:name,categories:meta.categories?[meta.categories]:[],series:meta.series?[meta.series]:[],commandes:meta.commandes?[meta.commandes]:[],date:new Date().toISOString()})}catch(err){say("Échec : "+err.message,6000)}}
   pending=[];if(out.length){try{await commit(j=>j.photos.push(...out),"Ajout de "+out.length+" photo(s)");say("Importé. En ligne sur le site public dans environ une minute.",6000)}catch(err){say("Échec : "+err.message,6000)}}};
 
 /* catégories */
-function man(){$("mnBody").innerHTML=(tree().map(n=>`<div class="mrow" style="margin-left:${n.depth*24}px"><span>${esc(n.name)}</span><button data-sub="${esc(n.path)}">+ sous-catégorie</button><button data-ren="${esc(n.path)}">renommer</button><button data-del="${esc(n.path)}" aria-label="Supprimer ${esc(n.name)}">supprimer</button></div>`).join("")||'<div class="hint">Aucune catégorie.</div>')+`<div class="add" style="margin-top:16px"><input data-a="top" placeholder="Nouvelle catégorie"><button class="b" data-ab="top">Ajouter</button></div><div class="hint">Supprimer une catégorie supprime aussi ses sous-catégories. Les photos concernées restent sur le site, sans catégorie.</div>`}
+function man(){$("mnBody").innerHTML=DIMS.map(([k,l])=>`<h3 class="mh">${l}</h3>`+(tree(k).map(n=>`<div class="mrow" style="margin-left:${n.depth*24}px"><span>${esc(n.name)}</span><button data-k="${k}" data-sub="${esc(n.path)}">+ sous-niveau</button><button data-k="${k}" data-ren="${esc(n.path)}">renommer</button><button data-k="${k}" data-del="${esc(n.path)}" aria-label="Supprimer ${esc(n.name)}">supprimer</button></div>`).join("")||'<div class="hint">Aucun élément.</div>')+`<div class="add" style="margin:10px 0 22px"><input data-a="${k}" placeholder="Nouvelle ${l.toLowerCase()}"><button class="b" data-k="${k}" data-ab="1">Ajouter</button></div>`).join("")+`<div class="hint">Supprimer un élément supprime aussi ses sous-niveaux. Les photos concernées restent sur le site, sans ce classement.</div>`}
 $("mnX").onclick=()=>{$("mnOv").classList.remove("open");render()};
-$("mnBody").onclick=async e=>{const b=e.target.closest("button");if(!b)return;const d=b.dataset;
+$("mnBody").onclick=async e=>{const b=e.target.closest("button");if(!b)return;const d=b.dataset,k=d.k;
   try{
-    if(d.ab){const v=clean($("mnBody").querySelector("[data-a=top]").value);if(!v)return;await commit(j=>addPath(j,v),"Catégorie")}
-    else if(d.sub!==undefined){const v=clean(prompt("Nom de la sous-catégorie de « "+label(d.sub)+" » :")||"");if(!v)return;await commit(j=>addPath(j,d.sub+SEP+v),"Sous-catégorie")}
+    if(d.ab){const v=clean($("mnBody").querySelector(`[data-a=${k}]`).value);if(!v)return;await commit(j=>addPath(j,v,k),"Ajout")}
+    else if(d.sub!==undefined){const v=clean(prompt("Nom du sous-niveau de « "+label(d.sub)+" » :")||"");if(!v)return;await commit(j=>addPath(j,d.sub+SEP+v,k),"Sous-niveau")}
     else if(d.ren!==undefined){const old=d.ren,parts=old.split(SEP),nv=clean(prompt("Nouveau nom :",parts.pop())||"");if(!nv)return;const np=[...parts,nv].join(SEP);if(np===old)return;
-      if(tree().some(n=>n.path===np)){say("Ce nom existe déjà à cet endroit",4000);return}
+      if(tree(k).some(n=>n.path===np)){say("Ce nom existe déjà à cet endroit",4000);return}
       const ren=x=>x===old||x.startsWith(old+SEP)?np+x.slice(old.length):x;
-      await commit(j=>{j.taxonomy.categories=(j.taxonomy.categories||[]).map(ren);j.photos.forEach(p=>{const c=cats(p);if(c.length){p.categories=[...new Set(c.map(ren))];delete p.category}})},"Renommage")}
-    else if(d.del!==undefined){const old=d.del,n=data.photos.filter(p=>inCat(p,old)).length,inn=x=>x===old||x.startsWith(old+SEP);
-      if(!confirm("Supprimer « "+label(old)+" » et ses sous-catégories ?"+(n?" "+n+" photo(s) perdront cette catégorie.":"")))return;
-      await commit(j=>{j.taxonomy.categories=(j.taxonomy.categories||[]).filter(x=>!inn(x));j.photos.forEach(p=>{const c=cats(p);if(c.length){p.categories=c.filter(x=>!inn(x));delete p.category}})},"Suppression de catégorie")}
+      await commit(j=>{j.taxonomy[k]=(j.taxonomy[k]||[]).map(ren);j.photos.forEach(p=>{const c=cats(p,k);if(c.length)setCats(p,k,[...new Set(c.map(ren))])})},"Renommage")}
+    else if(d.del!==undefined){const old=d.del,n=data.photos.filter(p=>inCat(p,old,k)).length,inn=x=>x===old||x.startsWith(old+SEP);
+      if(!confirm("Supprimer « "+label(old)+" » et ses sous-niveaux ?"+(n?" "+n+" photo(s) perdront ce classement.":"")))return;
+      await commit(j=>{j.taxonomy[k]=(j.taxonomy[k]||[]).filter(x=>!inn(x));j.photos.forEach(p=>{const c=cats(p,k);if(c.length)setCats(p,k,c.filter(x=>!inn(x)))})},"Suppression")}
     else return;
     man()}catch(err){fail(err)}};
 
 /* visionneuse */
 function open(i){const l=shown();if(!l.length)return;cur=(i+l.length)%l.length;const p=l[cur];$("lbImg").src=src(p);
-  $("lbBody").innerHTML=cfg?`<div class="foot" style="justify-content:space-between;margin:0 0 6px"><button class="b d" id="del">Supprimer</button><button class="b" id="sv">Enregistrer</button></div><label>Catégories</label><div id="cEd"></div><label>Texte</label><textarea id="eN" rows="6" placeholder="Écris ici ce que tu veux sur cette photo">${esc(p.note)}</textarea>`
-   :`${cats(p).length?`<div style="color:var(--g)">Catégories : ${cats(p).map(c=>`<span style="color:#000">${esc(label(c))}</span>`).join(" · ")}</div>`:""}${p.note?`<div class="note">${esc(p.note)}</div>`:""}`;
-  if(cfg){let dc=[...cats(p)];
-   const drawC=()=>{$("cEd").innerHTML=`<div class="tags">${dc.map((c,i)=>`<span>${esc(label(c))}<button data-ci="${i}" aria-label="Retirer">×</button></span>`).join("")||'<span style="color:var(--g)">Aucune</span>'}</div><select id="cAdd"><option value="">+ Ajouter une catégorie…</option>${tree().filter(n=>!dc.includes(n.path)).map(n=>`<option value="${esc(n.path)}">${"\u00a0\u00a0".repeat(n.depth)}${esc(n.name)}</option>`).join("")}<option value="__n">Nouvelle catégorie ou sous-catégorie…</option></select>`;
-    $("cAdd").onchange=async e=>{let v=e.target.value;if(!v)return;if(v==="__n"){v=clean(prompt("Nom de la nouvelle catégorie (pour une sous-catégorie, écris : Parent > Sous-catégorie) :")||"");if(!v){drawC();return}try{await commit(j=>addPath(j,v),"Catégorie")}catch(err){fail(err);drawC();return}}if(!dc.includes(v))dc.push(v);drawC()}};
-   $("cEd").onclick=e=>{const b=e.target.closest("[data-ci]");if(b){dc.splice(+b.dataset.ci,1);drawC()}};drawC();
-   $("sv").onclick=async()=>{const o={categories:[...dc],note:$("eN").value};try{await commit(j=>{const q=j.photos.find(x=>x.file===p.file);if(q){Object.assign(q,o);delete q.category}},"Modification");say("Enregistré")}catch(e){fail(e)}};
+  $("lbBody").innerHTML=cfg?`<div class="foot" style="justify-content:space-between;margin:0 0 6px"><button class="b d" id="del">Supprimer</button><button class="b" id="sv">Enregistrer</button></div>${DIMS.map(([d,l])=>`<label>${l}</label><div id="cEd-${d}"></div>`).join("")}<label>Texte</label><textarea id="eN" rows="6" placeholder="Écris ici ce que tu veux sur cette photo">${esc(p.note)}</textarea>`
+   :`${DIMS.map(([d,l])=>cats(p,d).length?`<div style="color:var(--g)">${l} : ${cats(p,d).map(c=>`<span style="color:#000">${esc(label(c))}</span>`).join(" · ")}</div>`:"").join("")}${p.note?`<div class="note">${esc(p.note)}</div>`:""}`;
+  if(cfg){const dc={};DIMS.forEach(([d])=>dc[d]=[...cats(p,d)]);
+   const drawC=d=>{const L=DIMS.find(x=>x[0]===d)[1].toLowerCase(),box=$("cEd-"+d);box.innerHTML=`<div class="tags">${dc[d].map((c,i)=>`<span>${esc(label(c))}<button data-ci="${i}" aria-label="Retirer">×</button></span>`).join("")||'<span style="color:var(--g)">Aucune</span>'}</div><select data-add="1"><option value="">+ Ajouter…</option>${tree(d).filter(n=>!dc[d].includes(n.path)).map(n=>`<option value="${esc(n.path)}">${"\u00a0\u00a0".repeat(n.depth)}${esc(n.name)}</option>`).join("")}<option value="__n">Nouvelle ${L} ou sous-${L}…</option></select>`;
+    box.querySelector("select").onchange=async e=>{let v=e.target.value;if(!v)return;if(v==="__n"){v=clean(prompt("Nom (pour une sous-"+L+", écris : Parent > Sous-"+L+") :")||"");if(!v){drawC(d);return}try{await commit(j=>addPath(j,v,d),"Nouvel élément")}catch(err){fail(err);drawC(d);return}}if(!dc[d].includes(v))dc[d].push(v);drawC(d)};
+    box.onclick=e=>{const b=e.target.closest("[data-ci]");if(b){dc[d].splice(+b.dataset.ci,1);drawC(d)}}};
+   DIMS.forEach(([d])=>drawC(d));
+   $("sv").onclick=async()=>{const o={note:$("eN").value};DIMS.forEach(([d])=>o[d]=[...dc[d]]);try{await commit(j=>{const q=j.photos.find(x=>x.file===p.file);if(q){Object.assign(q,o);delete q.category}},"Modification");say("Enregistré")}catch(e){fail(e)}};
    $("del").onclick=async()=>{if(!confirm("Supprimer cette photo définitivement ?"))return;say("Suppression…",0);try{await commit(j=>{j.photos=j.photos.filter(x=>x.file!==p.file)},"Suppression");try{await delFile(p.file)}catch(e){}$("lbOv").classList.remove("open");say("Supprimé")}catch(e){fail(e)}}}
   $("lbOv").classList.add("open")}
 $("grid").onclick=e=>{const c=e.target.closest(".card");if(!c)return;if(pickMode){const f=c.dataset.f;picked.has(f)?picked.delete(f):picked.add(f);updPick();return}open(shown().findIndex(p=>p.file===c.dataset.f))};
@@ -403,14 +412,22 @@ let pickMode=false;const picked=new Set();
 async function delFile(f){for(let i=0;i<3;i++){let sha;try{sha=(await gh("photos/"+encodeURIComponent(f))).sha}catch(e){if(/^404/.test(e.message))return;throw e}
   try{await gh("photos/"+encodeURIComponent(f),{method:"DELETE",body:{message:"Suppression "+f,sha,branch:cfg.branch}});return}catch(e){if(i<2&&/^(409|422)/.test(e.message)){await new Promise(r=>setTimeout(r,800));continue}throw e}}}
 function updPick(){document.querySelectorAll(".card").forEach(c=>c.classList.toggle("picked",picked.has(c.dataset.f)));$("pickN").textContent=picked.size+" sélectionnée"+(picked.size>1?"s":"");$("pickDel").disabled=!picked.size;$("pickSet").disabled=!picked.size}
-function startPick(){pickMode=true;picked.clear();$("pickCat").innerHTML='<option value="">Ajouter à la catégorie…</option>'+tree().map(n=>`<option value="${esc(n.path)}">${"\u00a0\u00a0".repeat(n.depth)}${esc(n.name)}</option>`).join("");$("pickbar").hidden=false;updPick()}
+function startPick(){pickMode=true;picked.clear();$("pickCat").innerHTML='<option value="">Ajouter à…</option>'+DIMS.map(([d,l])=>`<optgroup label="${l}">${tree(d).map(n=>`<option value="${d}|${esc(n.path)}">${"\u00a0\u00a0".repeat(n.depth)}${esc(n.name)}</option>`).join("")}</optgroup>`).join("");$("pickbar").hidden=false;updPick()}
 function endPick(){pickMode=false;picked.clear();$("pickbar").hidden=true;updPick()}
 $("pickNo").onclick=endPick;
-$("pickSet").onclick=async()=>{const files=[...picked],c=$("pickCat").value;if(!files.length||!c){say("Choisis une catégorie dans la liste",3000);return}say("Classement…",0);
-  try{await commit(j=>{j.photos.forEach(p=>{if(files.includes(p.file)){const c0=cats(p);if(!c0.includes(c))p.categories=[...c0,c];delete p.category}})},"Classement");endPick();say("Ajouté à « "+label(c)+" »")}catch(e){fail(e)}};
+$("pickSet").onclick=async()=>{const files=[...picked],c=$("pickCat").value;if(!files.length||!c){say("Choisis un classement dans la liste",3000);return}const i=c.indexOf("|"),pd=c.slice(0,i),pv=c.slice(i+1);say("Classement…",0);
+  try{await commit(j=>{j.photos.forEach(p=>{if(files.includes(p.file)){const c0=cats(p,pd);if(!c0.includes(pv))setCats(p,pd,[...c0,pv])}})},"Classement");endPick();say("Ajouté à « "+label(pv)+" »")}catch(e){fail(e)}};
 $("pickDel").onclick=async()=>{const files=[...picked];if(!files.length||!confirm("Supprimer définitivement "+files.length+" photo(s) ?"))return;say("Suppression…",0);
   try{await commit(j=>{j.photos=j.photos.filter(x=>!files.includes(x.file))},"Suppression de "+files.length+" photo(s)");for(const f of files){try{await delFile(f)}catch(e){}}endPick();say("Supprimé")}catch(e){fail(e)}};
 
+/* logo */
+const siteSt=()=>({logoText:"I3P",logoColor:"#000000",logoSize:56,...(data.site||{})});
+function applyLogo(o){const l=$("logo");l.textContent=o.logoText||"I3P";l.style.color=o.logoColor;l.style.fontSize=o.logoSize+"px"}
+let logoDraft=null;
+function openLogo(){logoDraft=siteSt();$("lText").value=logoDraft.logoText;$("lColor").value=logoDraft.logoColor;$("lSize").value=logoDraft.logoSize;$("lgoOv").classList.add("open")}
+[["lText","logoText"],["lColor","logoColor"],["lSize","logoSize"]].forEach(([id,k])=>$(id).oninput=e=>{logoDraft[k]=k==="logoSize"?+e.target.value:e.target.value;applyLogo(logoDraft)});
+$("lNo").onclick=()=>{$("lgoOv").classList.remove("open");applyLogo(siteSt())};
+$("lOk").onclick=async()=>{$("lgoOv").classList.remove("open");const d={...logoDraft};try{await commit(j=>{j.site={...(j.site||{}),...d}},"Logo");say("Enregistré. En ligne pour les visiteurs dans environ une minute.",6000)}catch(e){fail(e);applyLogo(siteSt())}};
 /* page Info */
 let editInfo=false,draftInfo=null;const INFO_ABOUT=DEF.text;
 const safeU=u=>/^(https?:\/\/|mailto:)/i.test(u||"")?u:"";
