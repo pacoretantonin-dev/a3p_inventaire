@@ -1660,12 +1660,12 @@
   ],
   "style": {
    "ti": false,
-   "bg": "#ffffff",
+   "bg": "#ffadad",
    "lc": "#6da76c",
    "ls": 1,
    "tc": "#6da76c",
    "ts": 14,
-   "bgFile": "fond-1794680327358.jpg",
+   "bgFile": "",
    "dim": 0
   }
  },
