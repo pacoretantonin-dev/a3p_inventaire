@@ -1647,17 +1647,7 @@
   }
  ],
  "intro": {
-  "texts": [
-   {
-    "id": "t1792876314066",
-    "text": "inventaire photographique personnel partagé    :)",
-    "x": 64,
-    "y": 35.6,
-    "w": 27,
-    "align": "left",
-    "font": "helvetica"
-   }
-  ],
+  "texts": [],
   "style": {
    "ti": false,
    "bg": "#ffadad",
