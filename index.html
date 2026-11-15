@@ -203,7 +203,7 @@ header{align-items:center;padding-top:20px}
 .tags button{font-style:normal}
 /* rond + croix épaisse */
 .opt::before{width:16px;height:16px}
-.opt.on::before{content:"";border:1.5px solid #000;background:linear-gradient(45deg,transparent calc(50% - 1.1px),#000 calc(50% - 1.1px),#000 calc(50% + 1.1px),transparent calc(50% + 1.1px)),linear-gradient(-45deg,transparent calc(50% - 1.1px),#000 calc(50% - 1.1px),#000 calc(50% + 1.1px),transparent calc(50% + 1.1px))}
+.opt.on::before{content:"";width:18px;height:18px;border:0;border-radius:0;background:linear-gradient(45deg,transparent calc(50% - 1.6px),#000 calc(50% - 1.6px),#000 calc(50% + 1.6px),transparent calc(50% + 1.6px)),linear-gradient(-45deg,transparent calc(50% - 1.6px),#000 calc(50% - 1.6px),#000 calc(50% + 1.6px),transparent calc(50% + 1.6px))}
 /* mode libre : plus de scroll automatique */
 html.free{scroll-snap-type:none!important;overflow-anchor:none}
 #grid.free .card{scroll-snap-align:none!important}
@@ -253,7 +253,7 @@ html.free{scroll-snap-type:none!important;overflow-anchor:none}
 <div class="ov" id="mnOv"><div class="box"><h2>Catégories</h2><div id="mnBody"></div><div class="foot"><button class="b" id="mnX">Fermer</button></div></div></div>
 
 <div class="ov" id="lbOv"><div class="lb"><div class="pic"><img id="lbImg" alt=""></div><div class="side">
-<div class="nav"><button id="pv" class="arr" aria-label="Précédente"><svg viewBox="0 0 32 14" width="32" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"><path d="M31 7H2M8 1 2 7l6 6"/></svg></button><button id="nx" class="arr" aria-label="Suivante"><svg viewBox="0 0 32 14" width="32" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"><path d="M1 7h29M24 1l6 6-6 6"/></svg></button><button id="lbX" class="xc" aria-label="Fermer"><svg viewBox="0 0 20 20" width="20" height="20" stroke="currentColor" stroke-width="1.8" stroke-linecap="square"><path d="M3 3l14 14M17 3 3 17"/></svg></button></div><div id="lbBody"></div></div></div></div>
+<div class="nav"><button id="pv" class="arr" aria-label="Précédente"><svg viewBox="0 0 32 14" width="20" height="9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"><path d="M31 7H2M8 1 2 7l6 6"/></svg></button><button id="nx" class="arr" aria-label="Suivante"><svg viewBox="0 0 32 14" width="20" height="9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"><path d="M1 7h29M24 1l6 6-6 6"/></svg></button><button id="lbX" class="xc" aria-label="Fermer"><svg viewBox="0 0 20 20" width="20" height="20" stroke="currentColor" stroke-width="1.8" stroke-linecap="square"><path d="M3 3l14 14M17 3 3 17"/></svg></button></div><div id="lbBody"></div></div></div></div>
 <div class="ov" id="stOv" style="z-index:60"><div class="box"><h2>Style de la page d'accueil</h2>
 <div class="hint">Les changements s'affichent en direct derrière cette fenêtre.</div>
 <label>Fond : couleur</label><input type="color" id="sBg">
@@ -337,7 +337,7 @@ function render(){
   renderIntro();updPick();if(!editInfo)renderInfo();
   const e=$("empty");e.hidden=inView||!!list.length;e.textContent=all.length?"Aucune photo ne correspond à ces filtres.":"L'archive est vide.";
   $("foot").innerHTML=cfg?`<button id="fA">Ajouter des photos</button><button id="fC">Classements</button><button id="fLogo">Logo</button><button id="fS">Sélectionner pour supprimer</button><button id="fX">Déconnexion</button>`:`<button id="fL">Administration</button>`;
-  $("foot").insertAdjacentHTML("afterbegin",`<span>© ${new Date().getFullYear()} I3P</span>`);$("foot").insertAdjacentHTML("beforeend",'<span style="margin-left:auto">version 26</span>');
+  $("foot").insertAdjacentHTML("afterbegin",`<span>© ${new Date().getFullYear()} I3P</span>`);$("foot").insertAdjacentHTML("beforeend",'<span style="margin-left:auto">version 27</span>');
 }
 async function newCat(parent="",k="categories"){const L=DIMS.find(x=>x[0]===k)[1].toLowerCase(),nm=clean(prompt(parent?"Nom de la sous-"+L+" de « "+label(parent)+" » :":"Nom de la nouvelle "+L+" :")||"");if(!nm)return;const path=parent?parent+SEP+nm:nm;if(parent)exp[k].add(parent);try{await commit(j=>addPath(j,path,k),parent?"Sous-élément":"Nouvel élément");say(parent?"Sous-"+L+" ajoutée":"Ajouté")}catch(e){fail(e)}}
 function setOpen(d){openDim=d;document.querySelectorAll("#filters .dim").forEach(b=>{b.classList.toggle("open",b.dataset.tog===d);b.setAttribute("aria-expanded",b.dataset.tog===d)});document.querySelectorAll("#filters .fp").forEach(f=>f.classList.toggle("open",f.dataset.d===d))}
