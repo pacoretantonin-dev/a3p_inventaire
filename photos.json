@@ -1,12 +1,12 @@
 {
  "taxonomy": {
   "categories": [
-   "Paysage",
+   "Territoire",
    "Cadrage",
-   "Paysage > Littoral",
-   "Paysage > Montagneux",
-   "Paysage > Rural",
-   "Paysage > Urbain",
+   "Territoire > Littoral",
+   "Territoire > Montagneux",
+   "Territoire > Rural",
+   "Territoire > Urbain",
    "Cadrage > Ensemble",
    "Cadrage > Frontal",
    "Cadrage > Angle",
@@ -107,7 +107,7 @@
    "date": "2026-10-24T19:44:54.659Z",
    "categories": [
     "Cadrage > Ensemble",
-    "Paysage > Rural",
+    "Territoire > Rural",
     "Localisation > France > Bourgogne-Franche-Comté > 71_Saône-et-Loire",
     "Culte > Catholique > Église",
     "Année > 2026"
@@ -247,7 +247,7 @@
    "date": "2026-10-24T19:45:26.623Z",
    "note": "",
    "categories": [
-    "Paysage > Littoral",
+    "Territoire > Littoral",
     "Localisation > France > Normandie",
     "Année > 2026"
    ]
@@ -256,7 +256,7 @@
    "file": "1792871126832-15.jpg",
    "date": "2026-10-24T19:45:28.815Z",
    "categories": [
-    "Paysage > Littoral",
+    "Territoire > Littoral",
     "Localisation > France > Bretagne > 22_Côtes-d'Armor",
     "Activité Portuaire > Bateau",
     "Année > 2026"
@@ -322,7 +322,7 @@
    "file": "1792871142859-21.jpg",
    "date": "2026-10-24T19:45:44.609Z",
    "categories": [
-    "Paysage > Littoral",
+    "Territoire > Littoral",
     "Localisation > France > Bretagne > 22_Côtes-d'Armor",
     "Année > 2026"
    ],
@@ -431,7 +431,7 @@
    "file": "1792871523340-10.jpg",
    "date": "2026-10-24T19:52:05.152Z",
    "categories": [
-    "Paysage > Urbain",
+    "Territoire > Urbain",
     "Cadrage > Angle",
     "Localisation > Italia > Sicilia",
     "Éléments > Publicitaire",
@@ -646,7 +646,7 @@
    "file": "1792871571502-30.jpg",
    "date": "2026-10-24T19:52:53.297Z",
    "categories": [
-    "Paysage > Littoral",
+    "Territoire > Littoral",
     "Cadrage > Ensemble",
     "Localisation > Italia > Sicilia",
     "Année > 2025"
@@ -662,7 +662,7 @@
    "date": "2026-10-24T19:52:55.128Z",
    "note": "",
    "categories": [
-    "Paysage > Littoral",
+    "Territoire > Littoral",
     "Localisation > Italia > Sicilia",
     "Année > 2025"
    ],
@@ -675,8 +675,8 @@
    "file": "1792871575317-32.jpg",
    "date": "2026-10-24T19:52:57.026Z",
    "categories": [
-    "Paysage > Montagneux",
-    "Paysage > Littoral",
+    "Territoire > Montagneux",
+    "Territoire > Littoral",
     "Cadrage > Ensemble",
     "Localisation > Italia > Sicilia",
     "Année > 2025"
@@ -721,7 +721,7 @@
    "file": "1792871582078-35.jpg",
    "date": "2026-10-24T19:53:03.637Z",
    "categories": [
-    "Paysage > Littoral",
+    "Territoire > Littoral",
     "Cadrage > Angle",
     "Localisation > Italia > Sicilia",
     "Année > 2026"
@@ -747,7 +747,7 @@
    "file": "1792871585662-37.jpg",
    "date": "2026-10-24T19:53:07.062Z",
    "categories": [
-    "Paysage > Littoral",
+    "Territoire > Littoral",
     "Cadrage > Ensemble",
     "Localisation > Italia > Sicilia",
     "Année > 2025"
@@ -791,7 +791,7 @@
    "file": "1792871592703-41.jpg",
    "date": "2026-10-24T19:53:14.609Z",
    "categories": [
-    "Paysage > Montagneux",
+    "Territoire > Montagneux",
     "Cadrage > Angle",
     "Localisation > Italia > Sicilia",
     "Culte > Catholique > Petit Patrimoine",
@@ -804,7 +804,7 @@
    "date": "2026-10-24T19:53:16.757Z",
    "categories": [
     "Cadrage > Détail",
-    "Paysage > Montagneux",
+    "Territoire > Montagneux",
     "Localisation > Italia > Sicilia",
     "Éléments > Publicitaire",
     "Année > 2026"
@@ -826,7 +826,7 @@
    "file": "1792871598870-44.jpg",
    "date": "2026-10-24T19:53:20.806Z",
    "categories": [
-    "Paysage > Montagneux",
+    "Territoire > Montagneux",
     "Localisation > Italia > Sicilia",
     "Éléments > Ruine",
     "Année > 2026"
@@ -837,7 +837,7 @@
    "file": "1792871601027-45.jpg",
    "date": "2026-10-24T19:53:23.186Z",
    "categories": [
-    "Paysage > Montagneux",
+    "Territoire > Montagneux",
     "Cadrage > Détail",
     "Localisation > Italia > Sicilia",
     "Éléments > Technique"
@@ -925,7 +925,7 @@
    "file": "1792875068930-4.jpg",
    "date": "2026-10-24T20:51:11.644Z",
    "categories": [
-    "Paysage > Littoral",
+    "Territoire > Littoral",
     "Localisation > France > Nouvelle Aquitaine > 33_Gironde",
     "Loisir",
     "Année > 2026"
@@ -1067,7 +1067,7 @@
    "file": "1792875113004-17.jpg",
    "date": "2026-10-24T20:51:55.723Z",
    "categories": [
-    "Paysage > Rural",
+    "Territoire > Rural",
     "Localisation > France > Nouvelle Aquitaine > 40_Landes",
     "Agriculture > Animaux",
     "Année > 2026"
@@ -1144,7 +1144,7 @@
    "file": "1792875137198-24.jpg",
    "date": "2026-10-24T20:52:19.163Z",
    "categories": [
-    "Paysage > Montagneux",
+    "Territoire > Montagneux",
     "Localisation > France > Nouvelle Aquitaine > 64_Pyrénées-Atlantiques",
     "Année > 2026"
    ],
@@ -1294,7 +1294,7 @@
    "file": "1792875875079-3.jpg",
    "date": "2026-10-24T21:04:37.475Z",
    "categories": [
-    "Paysage > Urbain",
+    "Territoire > Urbain",
     "Localisation > España > Catalonia > Barcelona",
     "Infrastructures de circulation > Voie Rapide",
     "Année > 2024"
@@ -1316,7 +1316,7 @@
    "file": "1792875880751-5.jpg",
    "date": "2026-10-24T21:04:43.426Z",
    "categories": [
-    "Paysage > Montagneux",
+    "Territoire > Montagneux",
     "Cadrage > Ensemble",
     "Localisation > France > Auvergne-Rhône-Alpes",
     "Année > 2024"
@@ -1371,7 +1371,7 @@
    "file": "1792875899547-12.jpg",
    "date": "2026-10-24T21:05:01.914Z",
    "categories": [
-    "Paysage > Montagneux",
+    "Territoire > Montagneux",
     "Localisation > France > Auvergne-Rhône-Alpes > 38_Isère",
     "Infrastructures de circulation > Routes",
     "Année > 2025"
@@ -1451,7 +1451,7 @@
    "file": "1792875918835-20.jpg",
    "date": "2026-10-24T21:05:20.915Z",
    "categories": [
-    "Paysage > Montagneux",
+    "Territoire > Montagneux",
     "Cadrage > Ensemble",
     "Localisation > France > Auvergne-Rhône-Alpes > 38_Isère",
     "Habitat > Collectif",
@@ -1463,7 +1463,7 @@
    "file": "1792875921413-21.jpg",
    "date": "2026-10-24T21:05:23.474Z",
    "categories": [
-    "Paysage > Montagneux",
+    "Territoire > Montagneux",
     "Localisation > France > Auvergne-Rhône-Alpes > 38_Isère",
     "Éléments > Publicitaire",
     "Année > 2025"
@@ -1474,7 +1474,7 @@
    "file": "1792875923866-22.jpg",
    "date": "2026-10-24T21:05:25.870Z",
    "categories": [
-    "Paysage > Urbain",
+    "Territoire > Urbain",
     "Cadrage > Perspective",
     "Localisation > España > Catalonia > Barcelona",
     "Année > 2024",
