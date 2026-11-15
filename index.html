@@ -190,6 +190,19 @@ header{align-items:center;padding-top:20px}
 .ph .pbtn{font-size:12px;color:var(--g);text-decoration:underline;margin-right:16px}
 .ph textarea{max-width:640px}
 #grid.free .ph{text-align:left}
+/* classification : rectangles gris, titre noir */
+.cg{margin:0 0 16px}
+.cgt{font-size:13px;font-weight:700;color:#000;margin-bottom:8px;letter-spacing:.01em}
+.chips,.tags{display:flex;flex-wrap:wrap;gap:6px}
+.chip,.tags span{display:inline-flex;align-items:center;background:#ececec;color:#6b6b6b;border:0;border-radius:2px;padding:5px 10px;font-size:12px;line-height:1.2}
+.tags{margin:0 0 8px}.tags button{color:#6b6b6b;margin-left:8px;font-size:14px;line-height:1}.tags button:hover{color:#000}
+.lb .side label{display:block;font-size:13px;font-weight:700;color:#000;margin:16px 0 8px}
+/* sélecteur : rond, croix quand sélectionné */
+.opt{gap:10px}
+.opt::before{width:14px;height:14px;border:1px solid #9a9a9a;border-radius:50%;box-sizing:border-box;flex:none;display:inline-flex;align-items:center;justify-content:center;font-size:11px;line-height:1;font-weight:400;color:#000;transition:border-color .15s}
+.opt:hover::before{border-color:#000}
+.opt.on::before{content:"✕";background:transparent;border-color:#000}
+.opt.add::before{display:none}
 .ctl{display:flex;gap:14px;justify-content:center;padding-top:6px;font-size:12px}
 .ctl button{color:var(--g);text-decoration:underline}.ctl button:hover{color:#000}
 .idn{margin:0;font-size:28px;font-weight:700;letter-spacing:-.03em;line-height:1.1}
@@ -307,7 +320,7 @@ function render(){
   renderIntro();updPick();if(!editInfo)renderInfo();
   const e=$("empty");e.hidden=inView||!!list.length;e.textContent=all.length?"Aucune photo ne correspond à ces filtres.":"L'archive est vide.";
   $("foot").innerHTML=cfg?`<button id="fA">Ajouter des photos</button><button id="fC">Classements</button><button id="fLogo">Logo</button><button id="fS">Sélectionner pour supprimer</button><button id="fX">Déconnexion</button>`:`<button id="fL">Administration</button>`;
-  $("foot").insertAdjacentHTML("afterbegin",`<span>© ${new Date().getFullYear()} I3P</span>`);$("foot").insertAdjacentHTML("beforeend",'<span style="margin-left:auto">version 24</span>');
+  $("foot").insertAdjacentHTML("afterbegin",`<span>© ${new Date().getFullYear()} I3P</span>`);$("foot").insertAdjacentHTML("beforeend",'<span style="margin-left:auto">version 25</span>');
 }
 async function newCat(parent="",k="categories"){const L=DIMS.find(x=>x[0]===k)[1].toLowerCase(),nm=clean(prompt(parent?"Nom de la sous-"+L+" de « "+label(parent)+" » :":"Nom de la nouvelle "+L+" :")||"");if(!nm)return;const path=parent?parent+SEP+nm:nm;if(parent)exp[k].add(parent);try{await commit(j=>addPath(j,path,k),parent?"Sous-élément":"Nouvel élément");say(parent?"Sous-"+L+" ajoutée":"Ajouté")}catch(e){fail(e)}}
 function setOpen(d){openDim=d;document.querySelectorAll("#filters .dim").forEach(b=>{b.classList.toggle("open",b.dataset.tog===d);b.setAttribute("aria-expanded",b.dataset.tog===d)});document.querySelectorAll("#filters .fp").forEach(f=>f.classList.toggle("open",f.dataset.d===d))}
@@ -391,7 +404,7 @@ function open(i){const l=curList();if(!l.length)return;cur=(i+l.length)%l.length
   const ttl=view.proj?`<div style="font-weight:700;margin-bottom:10px">${esc(dimName(view.dim))} : ${esc(view.proj.split(SEP).pop())}</div>`:"";
   $("lbBody").innerHTML=cfg?`${ttl}<div class="foot" style="justify-content:space-between;margin:0 0 6px"><button class="b d" id="del">Supprimer</button><button class="b" id="sv">Enregistrer</button></div>${view.proj?'<button class="b" id="setCov" style="margin:0 8px 8px 0">Définir comme couverture</button><button class="b" id="rmProj" style="margin-bottom:8px">Retirer de cette '+dimName(view.dim).toLowerCase()+'</button>':""}${view.proj?"":DIMS.map(([d,l])=>`<label>${l}</label><div id="cEd-${d}"></div>`).join("")}<label>Texte</label><textarea id="eN" rows="6" placeholder="Écris ici ce que tu veux sur cette photo">${esc(p.note)}</textarea>`
    :view.proj?`${ttl}${p.note?`<div class="note">${esc(p.note)}</div>`:""}`
-   :`${DIMS.map(([d,l])=>cats(p,d).length?`<div style="color:var(--g)">${l} : ${cats(p,d).map(c=>`<span style="color:#000">${esc(label(c))}</span>`).join(" · ")}</div>`:"").join("")}${p.note?`<div class="note">${esc(p.note)}</div>`:""}`;
+   :`${DIMS.map(([d,l])=>cats(p,d).length?`<div class="cg"><div class="cgt">${l}</div><div class="chips">${cats(p,d).map(c=>`<span class="chip">${esc(label(c))}</span>`).join("")}</div></div>`:"").join("")}${p.note?`<div class="note">${esc(p.note)}</div>`:""}`;
   if(cfg){const dc={};DIMS.forEach(([d])=>dc[d]=[...cats(p,d)]);
    const drawC=d=>{const L=DIMS.find(x=>x[0]===d)[1].toLowerCase(),box=$("cEd-"+d);box.innerHTML=`<div class="tags">${dc[d].map((c,i)=>`<span>${esc(label(c))}<button data-ci="${i}" aria-label="Retirer">×</button></span>`).join("")||'<span style="color:var(--g)">Aucune</span>'}</div><select data-add="1"><option value="">+ Ajouter…</option>${tree(d).filter(n=>!dc[d].includes(n.path)).map(n=>`<option value="${esc(n.path)}">${"\u00a0\u00a0".repeat(n.depth)}${esc(n.name)}</option>`).join("")}<option value="__n">Nouvelle ${L} ou sous-${L}…</option></select>`;
     box.querySelector("select").onchange=async e=>{let v=e.target.value;if(!v)return;if(v==="__n"){v=clean(prompt("Nom (pour une sous-"+L+", écris : Parent > Sous-"+L+") :")||"");if(!v){drawC(d);return}try{await commit(j=>addPath(j,v,d),"Nouvel élément")}catch(err){fail(err);drawC(d);return}}if(!dc[d].includes(v))dc[d].push(v);drawC(d)};
