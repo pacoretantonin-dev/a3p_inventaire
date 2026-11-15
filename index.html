@@ -224,6 +224,8 @@ html.free{scroll-snap-type:none!important;overflow-anchor:none}
 .ctl button{color:var(--g);text-decoration:underline}.ctl button:hover{color:#000}
 .idn{margin:0;font-size:28px;font-weight:700;letter-spacing:-.03em;line-height:1.1}
 .idj{margin:6px 0 0;font-size:14px;font-style:italic;color:var(--g)}
+#top{position:sticky;top:0;z-index:15;background:rgba(255,255,255,.96);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);padding-bottom:8px}
+html{scroll-padding-top:90px}
 /* version mobile */
 @media(max-width:760px){
 html,body{-webkit-text-size-adjust:100%}
@@ -270,8 +272,8 @@ footer{padding:32px 14px 90px}
 <div id="itools" hidden><button id="addT">+ texte</button><button id="sBtn">style</button><span>clique sur un texte pour régler police, alignement et largeur · glisser pour déplacer · flèches pour affiner · double-clic pour modifier ou supprimer · clic sur I3P pour entrer</span></div>
 </section>
 <div id="site">
-<header><button id="logo">I3P</button><div class="meta"><span id="count"></span><button id="vu" class="on">Grille</button><button id="vf">Libre</button><button id="vi">Info</button></div></header>
-<nav id="filters"></nav>
+<div id="top"><header><button id="logo">I3P</button><div class="meta"><span id="count"></span><button id="vu" class="on">Grille</button><button id="vf">Libre</button><button id="vi">Info</button></div></header>
+<nav id="filters"></nav></div>
 <main><div id="grid"></div><p id="empty" hidden></p></main>
 <section id="info" aria-label="Informations"></section>
 <footer id="foot"></footer>
@@ -373,7 +375,7 @@ function render(){
   renderIntro();updPick();if(!editInfo)renderInfo();
   const e=$("empty");e.hidden=inView||!!list.length;e.textContent=all.length?"Aucune photo ne correspond à ces filtres.":"L'archive est vide.";
   $("foot").innerHTML=cfg?`<button id="fA">Ajouter des photos</button><button id="fC">Classements</button><button id="fLogo">Logo</button><button id="fS">Sélectionner pour supprimer</button><button id="fX">Déconnexion</button>`:`<button id="fL">Administration</button>`;
-  $("foot").insertAdjacentHTML("afterbegin",`<span>© ${new Date().getFullYear()} I3P</span>`);$("foot").insertAdjacentHTML("beforeend",'<span style="margin-left:auto">version 28</span>');
+  $("foot").insertAdjacentHTML("afterbegin",`<span>© ${new Date().getFullYear()} I3P</span>`);$("foot").insertAdjacentHTML("beforeend",'<span style="margin-left:auto">version 29</span>');
 }
 async function newCat(parent="",k="categories"){const L=DIMS.find(x=>x[0]===k)[1].toLowerCase(),nm=clean(prompt(parent?"Nom de la sous-"+L+" de « "+label(parent)+" » :":"Nom de la nouvelle "+L+" :")||"");if(!nm)return;const path=parent?parent+SEP+nm:nm;if(parent)exp[k].add(parent);try{await commit(j=>addPath(j,path,k),parent?"Sous-élément":"Nouvel élément");say(parent?"Sous-"+L+" ajoutée":"Ajouté")}catch(e){fail(e)}}
 function setOpen(d){openDim=d;document.querySelectorAll("#filters .dim").forEach(b=>{b.classList.toggle("open",b.dataset.tog===d);b.setAttribute("aria-expanded",b.dataset.tog===d)});document.querySelectorAll("#filters .fp").forEach(f=>f.classList.toggle("open",f.dataset.d===d))}
