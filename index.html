@@ -224,6 +224,42 @@ html.free{scroll-snap-type:none!important;overflow-anchor:none}
 .ctl button{color:var(--g);text-decoration:underline}.ctl button:hover{color:#000}
 .idn{margin:0;font-size:28px;font-weight:700;letter-spacing:-.03em;line-height:1.1}
 .idj{margin:6px 0 0;font-size:14px;font-style:italic;color:var(--g)}
+/* version mobile */
+@media(max-width:760px){
+html,body{-webkit-text-size-adjust:100%}
+header{padding:16px 14px 6px;gap:8px}
+#logo{font-size:19px}
+.meta{gap:14px}
+nav{padding:6px 14px 0}
+.bar{gap:4px 22px}
+.dim{font-size:14px}
+.fp .list{max-height:50vh}
+.opt{font-size:14px;padding:3px 0}
+#grid:not(.free){grid-template-columns:repeat(3,minmax(0,1fr));gap:18px 6px;padding:18px 6px 40px}
+#grid:not(.free) .fr{aspect-ratio:1/1}
+#grid:not(.free) .cap{padding-top:5px;font-size:10px;line-height:1.3}
+#grid:not(.free) .cap .n{font-size:10px;letter-spacing:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#grid:not(.free) .cap .g{font-size:9px}
+.ph{padding:0 8px}
+.ph h2{font-size:26px}
+.ph .ptxt{font-size:14px}
+.ctl{gap:8px;font-size:10px}
+#grid.free .card{padding:20px 10px}
+#grid.free .fr img{max-width:96vw;max-height:72vh}
+#count{font-size:12px}
+footer{padding:32px 14px 90px}
+.ov{padding:0}
+.lb{grid-template-columns:1fr;grid-template-rows:minmax(0,58%) minmax(0,42%);gap:0;overflow:hidden}
+.lb .pic{padding:8px 8px 0}
+.lb img{max-height:100%}
+.lb .side{padding:10px 14px 24px;overflow:auto;font-size:14px}
+.nav{margin-bottom:12px}
+.box{padding:18px;max-height:96vh}
+#pickbar{padding:12px 14px;gap:12px}
+.irow,.irow.w{grid-template-columns:1fr}
+.isec{grid-template-columns:1fr;gap:10px;padding:20px 0}
+}
+@media(max-width:380px){#grid:not(.free){gap:14px 4px;padding:14px 4px 36px}}
 </style>
 </head>
 <body>
@@ -337,7 +373,7 @@ function render(){
   renderIntro();updPick();if(!editInfo)renderInfo();
   const e=$("empty");e.hidden=inView||!!list.length;e.textContent=all.length?"Aucune photo ne correspond à ces filtres.":"L'archive est vide.";
   $("foot").innerHTML=cfg?`<button id="fA">Ajouter des photos</button><button id="fC">Classements</button><button id="fLogo">Logo</button><button id="fS">Sélectionner pour supprimer</button><button id="fX">Déconnexion</button>`:`<button id="fL">Administration</button>`;
-  $("foot").insertAdjacentHTML("afterbegin",`<span>© ${new Date().getFullYear()} I3P</span>`);$("foot").insertAdjacentHTML("beforeend",'<span style="margin-left:auto">version 27</span>');
+  $("foot").insertAdjacentHTML("afterbegin",`<span>© ${new Date().getFullYear()} I3P</span>`);$("foot").insertAdjacentHTML("beforeend",'<span style="margin-left:auto">version 28</span>');
 }
 async function newCat(parent="",k="categories"){const L=DIMS.find(x=>x[0]===k)[1].toLowerCase(),nm=clean(prompt(parent?"Nom de la sous-"+L+" de « "+label(parent)+" » :":"Nom de la nouvelle "+L+" :")||"");if(!nm)return;const path=parent?parent+SEP+nm:nm;if(parent)exp[k].add(parent);try{await commit(j=>addPath(j,path,k),parent?"Sous-élément":"Nouvel élément");say(parent?"Sous-"+L+" ajoutée":"Ajouté")}catch(e){fail(e)}}
 function setOpen(d){openDim=d;document.querySelectorAll("#filters .dim").forEach(b=>{b.classList.toggle("open",b.dataset.tog===d);b.setAttribute("aria-expanded",b.dataset.tog===d)});document.querySelectorAll("#filters .fp").forEach(f=>f.classList.toggle("open",f.dataset.d===d))}
