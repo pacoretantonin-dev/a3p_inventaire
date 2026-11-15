@@ -63,10 +63,10 @@
    "Agriculture > Habitation",
    "Agriculture > Technique",
    "Éléments > Véhicule",
-   "Énergie",
-   "Énergie > Eau",
-   "Énergie > Électricité",
-   "Énergie > Carburant",
+   "Ressources naturelles et énergétiques",
+   "Ressources naturelles et énergétiques > Eau",
+   "Ressources naturelles et énergétiques > Électricité",
+   "Ressources naturelles et énergétiques > Carburant",
    "Infrastructures de circulation",
    "Infrastructures de circulation > Voie Rapide",
    "Infrastructures de circulation > Routes",
@@ -87,7 +87,7 @@
    "Année > 2024",
    "Année > 2025",
    "Année > 2026",
-   "Énergie > Forestière"
+   "Ressources naturelles et énergétiques > Forestière"
   ],
   "typologies": [
    "Habitat",
@@ -281,7 +281,7 @@
    "categories": [
     "Cadrage > Détail",
     "Localisation > France > Bretagne > 22_Côtes-d'Armor",
-    "Énergie > Électricité",
+    "Ressources naturelles et énergétiques > Électricité",
     "Année > 2026"
    ],
    "note": ""
@@ -293,7 +293,7 @@
     "Cadrage > Ensemble",
     "Localisation > France > Normandie > 61_Orne",
     "Éléments > Technique",
-    "Énergie > Électricité",
+    "Ressources naturelles et énergétiques > Électricité",
     "Année > 2026"
    ],
    "note": ""
@@ -303,7 +303,7 @@
    "date": "2026-10-24T19:45:39.800Z",
    "categories": [
     "Localisation > France > Nouvelle Aquitaine > 33_Gironde",
-    "Énergie > Eau",
+    "Ressources naturelles et énergétiques > Eau",
     "Année > 2026"
    ],
    "note": ""
@@ -457,7 +457,7 @@
    "categories": [
     "Cadrage > Ensemble",
     "Localisation > Italia > Sicilia",
-    "Énergie > Carburant",
+    "Ressources naturelles et énergétiques > Carburant",
     "Année > 2025"
    ],
    "note": ""
@@ -468,7 +468,7 @@
    "categories": [
     "Cadrage > Angle",
     "Localisation > Italia > Sicilia",
-    "Énergie > Carburant",
+    "Ressources naturelles et énergétiques > Carburant",
     "Année > 2025"
    ],
    "note": ""
@@ -479,7 +479,7 @@
    "categories": [
     "Cadrage > Angle",
     "Localisation > Italia > Sicilia",
-    "Énergie > Carburant",
+    "Ressources naturelles et énergétiques > Carburant",
     "Année > 2025"
    ],
    "note": ""
@@ -895,7 +895,7 @@
    "categories": [
     "Cadrage > Angle",
     "Localisation > France > Nouvelle Aquitaine > 33_Gironde",
-    "Énergie > Carburant",
+    "Ressources naturelles et énergétiques > Carburant",
     "Année > 2026"
    ],
    "note": ""
@@ -917,7 +917,7 @@
    "categories": [
     "Cadrage > Ensemble",
     "Localisation > France > Nouvelle Aquitaine > 33_Gironde",
-    "Énergie > Eau",
+    "Ressources naturelles et énergétiques > Eau",
     "Année > 2026"
    ],
    "note": ""
